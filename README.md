@@ -1,7 +1,7 @@
 # Simple Search Engine
 
 To learn general architecture and details of search engine.  
-And want <u>***your star***</u> to maintain my little vanity ^\_^.  
+Want <u>***your star***</u> to satisfy my little vanity ^\_^.  
 
 
 
