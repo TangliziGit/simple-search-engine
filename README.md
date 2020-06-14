@@ -1,11 +1,11 @@
 # Simple Search Engine
 
 To learn general architecture and details of search engine.  
-And want **your star** to maintain my little vanity ^\_^.  
+And want <u>***your star***</u> to maintain my little vanity ^\_^.  
 
 
 
-Now in developing...
+Now in developing...  
 General procedure in `analysis.md`.
 
 
@@ -28,4 +28,10 @@ Here should be an architecture image.
 5. rank algorithm
 6. crawler 
 7. maybe distribution? (actor model's advantage over CSP model)
+
+## License
+
+> MIT License
+>
+> Copyright (c) 2020 Chunxu Zhang
 
