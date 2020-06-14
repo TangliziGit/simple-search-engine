@@ -1,5 +1,6 @@
-package me.tanglizi.se.util
+package me.tanglizi.se.entity
 
+import me.tanglizi.se.entity.Result.Token
 import org.asynchttpclient.Response
 
 object Protocol {
@@ -13,7 +14,7 @@ object Protocol {
   case class TokenizeSearchWordRequest(word: String)
 
   // IndexActor
-  case class IndexRequest(id: Long, content: String, words: Array[String])  // TODO: content type should be a case class
+  case class IndexRequest(id: Long, content: String, words: Array[Token])   // TODO: content should contains content, url and title
   case class IndexSearchRequest(words: Array[String], cb: Any => Any)       // TODO: consider cb type
 
   // StorageActor
