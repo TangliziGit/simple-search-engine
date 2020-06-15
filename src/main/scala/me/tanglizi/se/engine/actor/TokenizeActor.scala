@@ -29,9 +29,8 @@ class TokenizeActor extends Actor with ActorLogging {
 
       var position: Int = 0
       val positionMap = mutable.Map[String, mutable.ArrayBuffer[Int]]()
-        .withDefaultValue(mutable.ArrayBuffer[Int]())
       for (word <- words) {
-        positionMap(word) += position
+        positionMap.getOrElseUpdate(word, ArrayBuffer[Int]()) += position
         position += word.length
       }
 

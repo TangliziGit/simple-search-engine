@@ -8,7 +8,7 @@ class StorageActor extends Actor with ActorLogging {
   override def receive: Receive = {
     case StoreContentRequest(hash, content) =>
       // TODO
-      0
+      sender ! 0L
 
     case FlushIndexRequest =>
 
