@@ -6,7 +6,7 @@ import org.asynchttpclient.{Dsl, Response}
 import org.junit.Test
 
 @Test
-class TokenizeActor {
+class TokenizeActorTest {
 
   val response: Response =
     Dsl.asyncHttpClient().prepareGet("https://www.cnblogs.com").execute().get()
