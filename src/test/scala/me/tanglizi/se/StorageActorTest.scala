@@ -7,9 +7,12 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import akka.pattern._
 import akka.util.Timeout
-import me.tanglizi.se.entity.Protocol.{FlushIndexRequest, LoadIndexRequest, StoreContentRequest}
+import me.tanglizi.se.entity.Protocol.{FindInvertedIndexItemRequest, FlushIndexRequest, FlushInvertedIndexRequest, IndexRequest, LoadIndexRequest, StoreContentRequest, TokenizeDocumentRequest}
+import me.tanglizi.se.entity.Result.Token
 import me.tanglizi.se.util.HashUtil
 
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
@@ -70,4 +73,39 @@ class StorageActorTest {
     println(Engine.indexTable)
   }
 
+  @Test
+  def testFlushInvertedIndexRequest(): Unit = {
+    val content: String = "我爱北京天安门"
+    val tokens: Array[Token] = Array[Token](
+      Token("我", Array(0)),
+      Token("爱", Array(1)),
+      Token("北京", Array(2)),
+      Token("天安门", Array(4)),
+    )
+
+    for (i <- Range(0, 20))
+      Engine.indexActor ! IndexRequest(i, content, tokens)
+    Thread.sleep(1000)
+
+    println(Engine.invertedIndexTable)
+    Engine.storageActor ! FlushInvertedIndexRequest
+    Thread.sleep(5000)
+  }
+
+  @Test
+  def testFindInvertedIndexItemRequest(): Unit = {
+    implicit val timeout: Timeout = Timeout(120.seconds)
+    val futures = ArrayBuffer[Future[mutable.Map[Long, ArrayBuffer[Int]]]]()
+    for (word <- Array("我", "爱", "北京", "天安门")) {
+      val future = (Engine.storageActor ? FindInvertedIndexItemRequest(word)).mapTo[mutable.Map[Long, ArrayBuffer[Int]]]
+      future onComplete {
+        case Success(item) =>
+          println(item)
+        case Failure(e) =>
+          e.printStackTrace()
+      }
+    }
+
+    Thread.sleep(1000)
+  }
 }

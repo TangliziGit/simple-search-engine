@@ -9,6 +9,7 @@ import me.tanglizi.se.entity.InvertedItem
 import me.tanglizi.se.entity.Protocol._
 import me.tanglizi.se.util.HashUtil
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success}
@@ -35,10 +36,10 @@ class IndexActor extends Actor with ActorLogging {
       }
 
       for (token <- tokens) {
-        val item: InvertedItem = Engine.invertedIndexTable
-          .getOrElseUpdate(token.keyword, InvertedItem(ArrayBuffer(), ArrayBuffer()))
-        item.indices += ((id, item.positions.length))
-        item.positions += token.position
+        val item = Engine.invertedIndexTable
+          .getOrElseUpdate(token.keyword, mutable.Map[Long, ArrayBuffer[Int]]())
+        val arr = item.getOrElseUpdate(id, ArrayBuffer[Int]())
+        arr ++= token.position
       }
 
       // TODO: set a flush size constant

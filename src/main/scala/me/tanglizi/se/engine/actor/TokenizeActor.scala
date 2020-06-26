@@ -19,7 +19,7 @@ class TokenizeActor extends Actor with ActorLogging {
       val (html, url) = (response.getResponseBody, response.getUri)
       val title: String = TokenizeActor.titleRegex.findFirstIn(html).getOrElse("No Title")
       val content: String = {
-        var content: String = html;
+        var content: String = html
         content = TokenizeActor.removeCodeRegex.replaceAllIn(content, "\n")
         content = TokenizeActor.htmlEscapeRegex.replaceAllIn(content, "\u0001")
         content = TokenizeActor.tempCharRegex.replaceAllIn(content, "\n")

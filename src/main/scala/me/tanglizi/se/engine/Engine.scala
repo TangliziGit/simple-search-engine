@@ -1,11 +1,11 @@
 package me.tanglizi.se.engine
 
 import akka.actor.{ActorRef, ActorSystem, Props}
-import io.github.yizhiru.thulac4j.Segmenter
 import me.tanglizi.se.engine.actor.{EngineActor, IndexActor, StorageActor, TokenizeActor}
 import me.tanglizi.se.entity.InvertedItem
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 class Engine {
 
@@ -22,6 +22,6 @@ object Engine {
   val storageActor:   ActorRef = actorSystem.actorOf(Props[StorageActor], name = "StorageActor")
 
   val indexTable = mutable.Map[Long, Long]()
-  val invertedIndexTable = mutable.Map[String, InvertedItem]()
+  val invertedIndexTable = mutable.Map[String, mutable.Map[Long, ArrayBuffer[Int]]]()
 
 }

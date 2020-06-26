@@ -57,9 +57,9 @@ StorageActor
         ! sender offset    ( Future )
         write content to the file 
         close
-    - FlushIndexRequest()
+    - update FlushIndexRequest()
         !!!
-    - FlushInvertedIndexRequst()
+    - update FlushInvertedIndexRequst()
         !!!
-    - FindInvertedIndexItemRequest(word)
+    - update FindInvertedIndexItemRequest(word)
         !!!

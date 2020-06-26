@@ -5,7 +5,13 @@ import java.io.{BufferedReader, File, FileInputStream, FileOutputStream, FileRea
 import akka.actor.{Actor, ActorLogging}
 import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.engine.config.Config
+import me.tanglizi.se.entity.InvertedItem
 import me.tanglizi.se.entity.Protocol._
+import me.tanglizi.se.util.HashUtil
+
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
+import scala.io.Source
 
 class StorageActor extends Actor with ActorLogging {
 
@@ -23,7 +29,7 @@ class StorageActor extends Actor with ActorLogging {
     case FlushIndexRequest =>
       // TODO
       val file: File = new File(Config.STORAGE_PATH, "indexTable.data")
-      val writer = new PrintWriter(new FileWriter(file))
+      val writer = new PrintWriter(new FileWriter(file, true))
       for ((key, value) <- Engine.indexTable)
         writer.println(s"$key $value")
       writer.close()
@@ -39,9 +45,40 @@ class StorageActor extends Actor with ActorLogging {
         }
 
     case FlushInvertedIndexRequest =>
+      log.info("inverted index table will be flushed")
+      for ((word, item) <- Engine.invertedIndexTable) {
+        val hash: Long = HashUtil.hash(word)
+        val fileName: String = s"${hash % 5}.invert"
+        val file: File = new File(Config.STORAGE_PATH, fileName)
+        val writer = new PrintWriter(new FileWriter(file, true))
+
+        for ((docId, ps) <- item)
+          for (p <- ps)
+            writer.println(s"$word $docId $p")
+
+        log.info(s"$word has been flushed in ${hash % 5}.invert")
+        writer.close()
+      }
 
     case FindInvertedIndexItemRequest(word) =>
+      val hash: Long = HashUtil.hash(word)
+      val fileName: String = s"${hash % 5}.invert"
+      val file: File = new File(Config.STORAGE_PATH, fileName)
+      val reader = new BufferedReader(new FileReader(file))
 
+      val arr = ArrayBuffer[(Long, Int)]()
+      val item = mutable.Map[Long, ArrayBuffer[Int]]()
+      reader.lines()
+        .forEach {
+          case s"$keyword $docId $position" if keyword == word =>
+            val arr = item.getOrElseUpdate(docId.toLong, ArrayBuffer[Int]())
+            arr += position.toInt
+            // log.info(s"OKOKOKOK $keyword $docId $position")
+          case _ =>
+        }
+
+      reader.close()
+      sender ! item
   }
 }
 
