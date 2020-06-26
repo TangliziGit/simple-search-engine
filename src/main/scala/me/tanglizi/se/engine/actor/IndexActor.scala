@@ -7,6 +7,7 @@ import akka.util.Timeout
 import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.entity.InvertedItem
 import me.tanglizi.se.entity.Protocol._
+import me.tanglizi.se.util.HashUtil
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{Await, Future}
@@ -22,7 +23,7 @@ class IndexActor extends Actor with ActorLogging {
       log.info(s"received IndexRequest ${IndexRequest(id, content, tokens)}")
 
       implicit val timeout: Timeout = Timeout(120.seconds)
-      val documentHash: Int = MurmurHash3.stringHash(content)
+      val documentHash: Int = HashUtil.hash(content)
       val offsetFuture: Future[Long] = ask(Engine.storageActor, StoreContentRequest(documentHash, content)).mapTo[Long]
 
       offsetFuture onComplete {

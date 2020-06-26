@@ -20,6 +20,7 @@ object Protocol {
   // StorageActor
   case class StoreContentRequest(hash: Long, content: String)
   case class FlushIndexRequest()
+  case class LoadIndexRequest()
   case class FlushInvertedIndexRequest()
   case class FindInvertedIndexItemRequest(word: String)
 
