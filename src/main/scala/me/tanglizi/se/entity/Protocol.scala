@@ -19,6 +19,8 @@ object Protocol {
 
   // StorageActor
   case class StoreContentRequest(hash: Long, content: String)
+  case class FlushMetaRequest()
+  case class LoadMetaRequest()
   case class FlushIndexRequest()
   case class LoadIndexRequest()
   case class FlushInvertedIndexRequest()

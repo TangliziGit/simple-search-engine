@@ -33,6 +33,10 @@ class IndexActorTest {
       case (keyword: String, item: mutable.Map[Long, ArrayBuffer[Int]]) =>
         println(keyword, item)
     }
+
+    println(Engine.totalDocumentCount.get)
+    println(Engine.totalWordCount.get)
+    println(Engine.wordCountInDocument)
   }
 
   @Test

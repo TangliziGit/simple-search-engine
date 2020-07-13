@@ -1,5 +1,7 @@
 package me.tanglizi.se.engine
 
+import java.util.concurrent.atomic.AtomicLong
+
 import akka.actor.{ActorRef, ActorSystem, Props}
 import me.tanglizi.se.engine.actor.{EngineActor, IndexActor, StorageActor, TokenizeActor}
 
@@ -13,9 +15,10 @@ class Engine {
 object Engine {
   // TODO: implement below functions
   def getDocumentId: Long = 123
-  def getTotalDocumentCount: Long = 123
-  def getTotalWordCount: Long = 1230
-  def getWordCountInDocument(documentId: Long): Long = 123
+
+  val totalDocumentCount: AtomicLong = new AtomicLong(0)
+  val totalWordCount: AtomicLong = new AtomicLong(0)
+  val wordCountInDocument = mutable.Map[Long, Long]()
 
   val actorSystem: ActorSystem = ActorSystem.create("searchEngineActorSystem")
 

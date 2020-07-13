@@ -46,10 +46,19 @@ class IndexActor extends Actor with ActorLogging {
         arr ++= token.position
       }
 
+      // maintain total count
+      val wordCount: Int = tokens.map(_.position.length).sum
+      Engine.wordCountInDocument.getOrElseUpdate(id, wordCount)
+      Engine.totalDocumentCount.incrementAndGet()
+      Engine.totalWordCount.addAndGet(wordCount)
+
+      // conditional flush
       if (Engine.invertedIndexTable.size > Config.INVERTED_INDEX_TABLE_FLUSH_SIZE)
         Engine.storageActor ! FlushInvertedIndexRequest
       if (Engine.indexTable.size % Config.INDEX_TABLE_FLUSH_FREQ == 0)
         Engine.storageActor ! FlushIndexRequest
+      if (Engine.totalDocumentCount.get() % Config.META_TABLE_FLUSH_FREQ == 0)
+        Engine.storageActor ! FlushMetaRequest
 
     case IndexSearchRequest(words, cb) =>
       implicit val timeout: Timeout = Config.DEFAULT_AKKA_TIMEOUT

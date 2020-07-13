@@ -13,7 +13,7 @@ class Document(documentId: Long,
   var Array(title, url, content) = Array("", "", "")
 
   def IDF(documentCountOfKeyword: Int): Double =
-    math.log(Engine.getTotalDocumentCount / documentCountOfKeyword + 1) / math.log(2)
+    math.log(Engine.totalDocumentCount.get() / documentCountOfKeyword + 1) / math.log(2)
 
   def TF(keyword: String): Double =
     keywordsMap(keyword).size / keywordCount.toDouble
@@ -24,8 +24,11 @@ class Document(documentId: Long,
 
     for ((keyword, documentCountOfKeyword) <- keywords.zip(documentCountsOfKeyword)) {
       val tf: Double = TF(keyword)
+      val totalWordCount: Long = Engine.totalWordCount.get()
+      val totalDocumentCount: Long = Engine.totalDocumentCount.get()
+
       val up: Double = IDF(documentCountOfKeyword) * tf * (1 + k)
-      val low: Double = tf + k * (1 - b + b * keywordCount / ( Engine.getTotalWordCount / Engine.getTotalDocumentCount))
+      val low: Double = tf + k * (1 - b + b * keywordCount / ( totalWordCount / totalDocumentCount))
       sum += up / low
     }
     BM25 = sum
@@ -53,7 +56,7 @@ object Document {
     }
 
     val documents = for ((documentId, wordsMap) <- documentIdToWordsMap) yield {
-      val document = new Document(documentId, wordsMap.toMap, Engine.getWordCountInDocument(documentId))
+      val document = new Document(documentId, wordsMap.toMap, Engine.wordCountInDocument(documentId))
       document.calculateBM25(keywords, keywordPositionsMaps.map(_.size))
       document
     }
