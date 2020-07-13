@@ -12,7 +12,11 @@ class Engine {
 }
 
 object Engine {
+  // TODO
   def getDocumentId: Long = 123
+  def getTotalDocumentCount: Long = 123
+  def getTotalWordCount: Long = 1230
+  def getWordCountInDocument(documentId: Long): Long = 123
 
   val actorSystem: ActorSystem = ActorSystem.create("searchEngineActorSystem")
 
