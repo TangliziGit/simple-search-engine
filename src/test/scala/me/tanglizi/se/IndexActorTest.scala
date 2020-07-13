@@ -1,13 +1,17 @@
 package me.tanglizi.se
 
+import scala.concurrent.duration._
+import akka.pattern._
 import me.tanglizi.se.engine.Engine
-import me.tanglizi.se.entity.Document
-import me.tanglizi.se.entity.Protocol.{IndexRequest, IndexSearchRequest}
+import me.tanglizi.se.engine.config.Config
+import me.tanglizi.se.entity.{Document, DocumentInfo}
+import me.tanglizi.se.entity.Protocol.{FlushIndexRequest, FlushInvertedIndexRequest, FlushMetaRequest, IndexRequest, IndexSearchRequest, LoadIndexRequest, LoadMetaRequest}
 import me.tanglizi.se.entity.Result.Token
 import org.junit.Test
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.{Await, Future}
 
 @Test
 class IndexActorTest {
@@ -21,7 +25,7 @@ class IndexActorTest {
       Token("天安门", Array(4)),
     )
 
-    Engine.indexActor ! IndexRequest(1, "我爱北京天安门", tokens)
+    Engine.indexActor ! IndexRequest(1, DocumentInfo("title", "url", "我爱北京天安门"), tokens)
 
     Thread.sleep(1000)
 
@@ -37,11 +41,24 @@ class IndexActorTest {
     println(Engine.totalDocumentCount.get)
     println(Engine.totalWordCount.get)
     println(Engine.wordCountInDocument)
+
+    Engine.storageActor ! FlushInvertedIndexRequest
+    Engine.storageActor ! FlushIndexRequest
+    Engine.storageActor ! FlushMetaRequest
+
+    Thread.sleep(1000)
   }
 
   @Test
   def testIndexSearchRequest(): Unit = {
     val words = Array[String]("我", "爱", "北京", "天安门")
+
+    implicit val timeout = Config.DEFAULT_AKKA_TIMEOUT
+    val result1 = Engine.storageActor ? LoadMetaRequest
+    val result2 = Engine.storageActor ? LoadIndexRequest
+
+    Await.ready(result1, Config.DEFAULT_AWAIT_TIMEOUT)
+    Await.ready(result2, Config.DEFAULT_AWAIT_TIMEOUT)
 
     Engine.indexActor ! IndexSearchRequest(words, xs => {
       println(xs)

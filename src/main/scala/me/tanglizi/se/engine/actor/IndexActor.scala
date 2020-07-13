@@ -6,7 +6,7 @@ import akka.pattern._
 import akka.util.Timeout
 import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.engine.config.Config
-import me.tanglizi.se.entity.Document
+import me.tanglizi.se.entity.{Document, DocumentInfo}
 import me.tanglizi.se.entity.Protocol._
 import me.tanglizi.se.util.HashUtil
 
@@ -20,19 +20,20 @@ class IndexActor extends Actor with ActorLogging {
   import context.dispatcher
 
   override def receive: Receive = {
-    case IndexRequest(id, content, tokens) =>
-      log.info(s"received IndexRequest ${IndexRequest(id, content, tokens)}")
+    case IndexRequest(id, documentInfo, tokens) =>
+      log.info(s"received IndexRequest ${IndexRequest(id, documentInfo, tokens)}")
       implicit val timeout: Timeout = Config.DEFAULT_AKKA_TIMEOUT
 
       // get hash code from document content
       // used to determine the file name this document locates
-      val documentHash: Int = HashUtil.hash(content)
-      val offsetFuture: Future[Long] = ask(Engine.storageActor, StoreContentRequest(documentHash, content)).mapTo[Long]
+      val documentHash: Int = HashUtil.hash(documentInfo.content)
+      val offsetFuture: Future[Long] =
+        (Engine.storageActor ? StoreDocumentRequest(documentHash, documentInfo)).mapTo[Long]
 
       // get document position of index table, named `offset`
       offsetFuture onComplete {
         case Success(offset) =>
-          Engine.indexTable(id) = offset
+          Engine.indexTable(id) = (documentHash, offset)
           log.info(s"indexTable $id -> $offset")
         case Failure(exception) =>
           exception.printStackTrace()
@@ -83,10 +84,16 @@ class IndexActor extends Actor with ActorLogging {
         .sortBy(document => document.BM25)
 
       // add document information (title, url and content) by document id
-      documents.foreach(document => {
-        // TODO: find document information
-        document.setInformation("title", "url", "content")
-      })
+      val documentInfoFutures: List[Future[DocumentInfo]] = documents.map(document =>
+        (Engine.storageActor ? FindDocumentRequest(document.documentId)).mapTo[DocumentInfo]
+      )
+      val documentInfoFutureList: Future[List[DocumentInfo]] = Future.sequence(documentInfoFutures)
+      val documentInfoList: List[DocumentInfo] = Await.result(documentInfoFutureList, Config.DEFAULT_AWAIT_TIMEOUT)
+
+      documents.zip(documentInfoList).foreach{
+        case (document, documentInfo) =>
+          document.setInformation(documentInfo)
+      }
 
       cb(documents)
   }
