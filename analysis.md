@@ -2,7 +2,7 @@ EngineActor
     - Done AddRequest(response)
         get doc id
         ! SegDocReq(id, html)
-    - SearchRequest(word, cb)
+    - Done SearchRequest(word, cb)
         ? SegSWReq(word) -> words
         ! IndexSearchReq(words, cb)
 
