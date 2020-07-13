@@ -1,8 +1,8 @@
 package me.tanglizi.se
 
 import me.tanglizi.se.engine.Engine
-import me.tanglizi.se.entity.InvertedItem
-import me.tanglizi.se.entity.Protocol.IndexRequest
+import me.tanglizi.se.entity.{Document, InvertedItem}
+import me.tanglizi.se.entity.Protocol.{IndexRequest, IndexSearchRequest}
 import me.tanglizi.se.entity.Result.Token
 import org.junit.Test
 
@@ -29,6 +29,17 @@ class IndexActorTest {
     Engine.invertedIndexTable.foreach{ case (keyword: String, item: InvertedItem) => {
       println(keyword, item)
     }}
+  }
+
+  @Test
+  def testIndexSearchRequest(): Unit = {
+    val words = Array[String]("我", "爱", "北京", "天安门")
+
+    Engine.indexActor ! IndexSearchRequest(words, xs => {
+      println(xs)
+    })
+
+    Thread.sleep(1000)
   }
 
 }

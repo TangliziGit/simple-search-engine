@@ -38,7 +38,7 @@ IndexActor
             ! FlushInvertedIndexRequst()
         when engine.indexTable size % xxx === 0:
             ! FlushIndexRequest()
-    - IndexSearchRequest(words, cb)
+    - Done IndexSearchRequest(words, cb)
         for word in words: 
             ! FindInvertedIndexItemRequest(word) -> futureList
         await all futureList
