@@ -18,4 +18,8 @@ object Config {
 
   val DOCUMENT_BM25_K: Double = 2
   val DOCUMENT_BM25_B: Double = 0.75
+
+  val CONTENT_SPLITTER = "{{SPLIT}}"
+  val CONTENT_HASH_SIZE = 5
+  val WORD_HASH_SIZE = 5
 }

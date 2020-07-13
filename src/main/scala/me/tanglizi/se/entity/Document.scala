@@ -6,11 +6,11 @@ import me.tanglizi.se.engine.config.Config
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-class Document(documentId: Long,
-               keywordsMap: Map[String, List[Int]],
-               keywordCount: Long) {
+class Document(val documentId: Long,
+               val keywordsMap: Map[String, List[Int]],
+               val keywordCount: Long) {
   var BM25: Double = 0
-  var Array(title, url, content) = Array("", "", "")
+  var documentInfo: DocumentInfo = DocumentInfo("", "", "")
 
   def IDF(documentCountOfKeyword: Int): Double =
     math.log(Engine.totalDocumentCount.get() / documentCountOfKeyword + 1) / math.log(2)
@@ -35,14 +35,14 @@ class Document(documentId: Long,
     BM25
   }
 
-  def setInformation(title: String, url: String, content: String): Unit = {
-    this.title = title;
-    this.url = url;
-    this.content = content;
-  }
+  def setInformation(title: String, url: String, content: String): Unit =
+    this.documentInfo = DocumentInfo(title, url, content)
+
+  def setInformation(documentInfo: DocumentInfo): Unit =
+    this.documentInfo = documentInfo
 
   override def toString: String =
-    s"$documentId [$title, $url, $content, ($BM25)]"
+    s"Document[$documentId, ${documentInfo.title}, ${documentInfo.url}, ${documentInfo.content}, ($BM25)]"
 }
 
 object Document {

@@ -14,11 +14,12 @@ object Protocol {
   case class TokenizeSearchWordRequest(word: String)
 
   // IndexActor
-  case class IndexRequest(id: Long, content: String, words: Array[Token])   // TODO: content should contains content, url and title
+  case class IndexRequest(id: Long, documentInfo: DocumentInfo, words: Array[Token])
   case class IndexSearchRequest(words: Array[String], cb: List[Document] => Any)
 
   // StorageActor
-  case class StoreContentRequest(hash: Long, content: String)
+  case class StoreDocumentRequest(hash: Long, documentInfo: DocumentInfo)
+  case class FindDocumentRequest(documentId: Long)
   case class FlushMetaRequest()
   case class LoadMetaRequest()
   case class FlushIndexRequest()
