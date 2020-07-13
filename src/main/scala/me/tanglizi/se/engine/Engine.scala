@@ -13,8 +13,6 @@ class Engine {
 }
 
 object Engine {
-  // TODO: implement below functions
-  def getDocumentId: Long = 123
 
   val totalDocumentCount: AtomicLong = new AtomicLong(0)
   val totalWordCount: AtomicLong = new AtomicLong(0)
@@ -27,7 +25,10 @@ object Engine {
   val indexActor:     ActorRef = actorSystem.actorOf(Props[IndexActor], name = "IndexActor")
   val storageActor:   ActorRef = actorSystem.actorOf(Props[StorageActor], name = "StorageActor")
 
-  val indexTable = mutable.Map[Long, Long]()
+  // indexTable: documentId -> (hashCode, fileOffset)
+  val indexTable = mutable.Map[Long, (Int, Long)]()
   val invertedIndexTable = mutable.Map[String, mutable.Map[Long, ArrayBuffer[Int]]]()
+
+  def getDocumentId: Long = totalDocumentCount.get()
 
 }

@@ -5,6 +5,7 @@ import java.util
 import akka.actor.{Actor, ActorLogging}
 import io.github.yizhiru.thulac4j.Segmenter
 import me.tanglizi.se.engine.Engine
+import me.tanglizi.se.entity.DocumentInfo
 import me.tanglizi.se.entity.Protocol._
 import me.tanglizi.se.entity.Result.Token
 
@@ -60,7 +61,9 @@ class TokenizeActor extends Actor with ActorLogging {
       log.info(s"tokenizer result: ${result.mkString(", ")}")
       log.info(s"content title: $title, url: $url")
 
-      Engine.indexActor ! IndexRequest(id, content, result)
+      val documentInfo: DocumentInfo = DocumentInfo(title, url.toUrl, content)
+
+      Engine.indexActor ! IndexRequest(id, documentInfo, result)
 
     case TokenizeSearchWordRequest(sentence) =>
       // simply tokenize the search sentence
