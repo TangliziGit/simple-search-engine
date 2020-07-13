@@ -5,6 +5,7 @@ import akka.actor.{Actor, ActorLogging}
 import akka.pattern._
 import akka.util.Timeout
 import me.tanglizi.se.engine.Engine
+import me.tanglizi.se.engine.config.Config
 import me.tanglizi.se.entity.Document
 import me.tanglizi.se.entity.Protocol._
 import me.tanglizi.se.util.HashUtil
@@ -22,7 +23,7 @@ class IndexActor extends Actor with ActorLogging {
     case IndexRequest(id, content, tokens) =>
       log.info(s"received IndexRequest ${IndexRequest(id, content, tokens)}")
 
-      implicit val timeout: Timeout = Timeout(120.seconds)
+      implicit val timeout: Timeout = Config.DEFAULT_AKKA_TIMEOUT
       val documentHash: Int = HashUtil.hash(content)
       val offsetFuture: Future[Long] = ask(Engine.storageActor, StoreContentRequest(documentHash, content)).mapTo[Long]
 
@@ -35,9 +36,9 @@ class IndexActor extends Actor with ActorLogging {
       }
 
       for (token <- tokens) {
-        val item = Engine.invertedIndexTable
+        val item: mutable.Map[Long, ArrayBuffer[Int]] = Engine.invertedIndexTable
           .getOrElseUpdate(token.keyword, mutable.Map[Long, ArrayBuffer[Int]]())
-        val arr = item.getOrElseUpdate(id, ArrayBuffer[Int]())
+        val arr: ArrayBuffer[Int] = item.getOrElseUpdate(id, ArrayBuffer[Int]())
         arr ++= token.position
       }
 
@@ -48,15 +49,20 @@ class IndexActor extends Actor with ActorLogging {
         Engine.storageActor ! FlushIndexRequest
 
     case IndexSearchRequest(words, cb) =>
-      implicit val timeout: Timeout = Timeout(120.seconds)
-      val futuresList: List[Future[mutable.Map[Long, ArrayBuffer[Int]]]] = words.map(word =>
-        ( Engine.storageActor ? FindInvertedIndexItemRequest(word) )
-          .mapTo[mutable.Map[Long, ArrayBuffer[Int]]]
-      ).toList
-      val futures: Future[List[mutable.Map[Long, ArrayBuffer[Int]]]] = Future.sequence(futuresList)
+      implicit val timeout: Timeout = Config.DEFAULT_AKKA_TIMEOUT
+
+      val futures: Future[List[mutable.Map[Long, ArrayBuffer[Int]]]] = {
+        val futureList = words.map( word =>
+            (Engine.storageActor ? FindInvertedIndexItemRequest(word))
+              .mapTo[mutable.Map[Long, ArrayBuffer[Int]]]
+          ).toList
+
+        Future.sequence(futureList)
+      }
 
       // for each word, map document id to word position list
-      val keywordPositionsMaps: List[mutable.Map[Long, ArrayBuffer[Int]]] = Await.result(futures, 120.seconds)
+      val keywordPositionsMaps: List[mutable.Map[Long, ArrayBuffer[Int]]] =
+        Await.result(futures, Config.DEFAULT_AWAIT_TIMEOUT)
 
       val documents: List[Document] = Document
         .fromDs(keywordPositionsMaps, words)

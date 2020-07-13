@@ -1,24 +1,22 @@
 package me.tanglizi.se.engine.actor
 
-import java.io.{BufferedReader, File, FileInputStream, FileOutputStream, FileReader, FileWriter, PrintWriter}
+import java.io.{BufferedReader, File, FileReader, FileWriter, PrintWriter}
 
 import akka.actor.{Actor, ActorLogging}
 import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.engine.config.Config
-import me.tanglizi.se.entity.InvertedItem
 import me.tanglizi.se.entity.Protocol._
 import me.tanglizi.se.util.HashUtil
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.io.Source
 
 class StorageActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case StoreContentRequest(hash, content) =>
       val fileName: String = s"${hash % 5}.content"
-      val file: File = new File(Config.STORAGE_PATH, fileName)  // TODO: set a path constant
+      val file: File = new File(Config.STORAGE_PATH, fileName)
 
       sender ! file.getTotalSpace
       log.info(s"$fileName (hash: $hash) will be chosen to be wrote the content")
@@ -27,16 +25,14 @@ class StorageActor extends Actor with ActorLogging {
       writer.close()
 
     case FlushIndexRequest =>
-      // TODO
-      val file: File = new File(Config.STORAGE_PATH, "indexTable.data")
+      val file: File = new File(Config.STORAGE_PATH, Config.INDEX_TABLE_FILE_NAME)
       val writer = new PrintWriter(new FileWriter(file, true))
       for ((key, value) <- Engine.indexTable)
         writer.println(s"$key $value")
       writer.close()
 
     case LoadIndexRequest =>
-      // TODO
-      val file: File = new File(Config.STORAGE_PATH, "indexTable.data")
+      val file: File = new File(Config.STORAGE_PATH, Config.INDEX_TABLE_FILE_NAME)
       val reader = new BufferedReader(new FileReader(file))
       reader.lines()
         .forEach {
@@ -66,12 +62,11 @@ class StorageActor extends Actor with ActorLogging {
       val file: File = new File(Config.STORAGE_PATH, fileName)
       val reader = new BufferedReader(new FileReader(file))
 
-      val arr = ArrayBuffer[(Long, Int)]()
       val item = mutable.Map[Long, ArrayBuffer[Int]]()
       reader.lines()
         .forEach {
           case s"$keyword $docId $position" if keyword == word =>
-            val arr = item.getOrElseUpdate(docId.toLong, ArrayBuffer[Int]())
+            val arr: ArrayBuffer[Int] = item.getOrElseUpdate(docId.toLong, ArrayBuffer[Int]())
             arr += position.toInt
             // log.info(s"OKOKOKOK $keyword $docId $position")
           case _ =>

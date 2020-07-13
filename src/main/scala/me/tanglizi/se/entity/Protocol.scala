@@ -7,7 +7,7 @@ object Protocol {
 
   // EngineActor
   case class AddRequest(response: Response)
-  case class SearchRequest(word: String, cb: List[Document] => Any)                    // TODO: consider cb type
+  case class SearchRequest(word: String, cb: List[Document] => Any)
 
   // TokenizeActor
   case class TokenizeDocumentRequest(id: Long, response: Response)
@@ -15,7 +15,7 @@ object Protocol {
 
   // IndexActor
   case class IndexRequest(id: Long, content: String, words: Array[Token])   // TODO: content should contains content, url and title
-  case class IndexSearchRequest(words: Array[String], cb: List[Document] => Any)       // TODO: consider cb type
+  case class IndexSearchRequest(words: Array[String], cb: List[Document] => Any)
 
   // StorageActor
   case class StoreContentRequest(hash: Long, content: String)
