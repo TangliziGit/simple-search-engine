@@ -5,7 +5,7 @@ import akka.actor.{Actor, ActorLogging}
 import akka.pattern._
 import akka.util.Timeout
 import me.tanglizi.se.engine.Engine
-import me.tanglizi.se.entity.{Document, InvertedItem}
+import me.tanglizi.se.entity.Document
 import me.tanglizi.se.entity.Protocol._
 import me.tanglizi.se.util.HashUtil
 
@@ -13,7 +13,6 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success}
-import scala.util.hashing.MurmurHash3
 
 class IndexActor extends Actor with ActorLogging {
 

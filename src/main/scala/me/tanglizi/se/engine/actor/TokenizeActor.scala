@@ -14,6 +14,15 @@ import scala.util.matching.Regex
 
 class TokenizeActor extends Actor with ActorLogging {
 
+  def getSegments(content: String): Array[String] = {
+    val words: Array[String] = {
+      Segmenter.enableFilterStopWords()
+      val words: util.List[String] = Segmenter.segment(content)
+      words.toArray[String](Array.ofDim[String](words.size))
+    }
+    words
+  }
+
   override def receive: Receive = {
     case TokenizeDocumentRequest(id, response) =>
       val (html, url) = (response.getResponseBody, response.getUri)
@@ -28,11 +37,7 @@ class TokenizeActor extends Actor with ActorLogging {
         content
       }
 
-      val words: Array[String] = {
-        Segmenter.enableFilterStopWords()
-        val words: util.List[String] = Segmenter.segment(content)
-        words.toArray[String](Array.ofDim[String](words.size))
-      }
+      val words: Array[String] = getSegments(content)
 
       var position: Int = 0
       val positionMap = mutable.Map[String, mutable.ArrayBuffer[Int]]()
@@ -50,8 +55,9 @@ class TokenizeActor extends Actor with ActorLogging {
 
       Engine.indexActor ! IndexRequest(id, content, result)
 
-    case TokenizeSearchWordRequest(word) =>
-
+    case TokenizeSearchWordRequest(sentence) =>
+      val words: Array[String] = getSegments(sentence)
+      sender ! words
   }
 }
 
