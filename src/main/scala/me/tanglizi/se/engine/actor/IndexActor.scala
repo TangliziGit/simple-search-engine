@@ -46,7 +46,6 @@ class IndexActor extends Actor with ActorLogging {
         arr ++= token.position
       }
 
-      // TODO: set a flush size constant
       if (Engine.invertedIndexTable.size > Config.INVERTED_INDEX_TABLE_FLUSH_SIZE)
         Engine.storageActor ! FlushInvertedIndexRequest
       if (Engine.indexTable.size % Config.INDEX_TABLE_FLUSH_FREQ == 0)
@@ -76,7 +75,7 @@ class IndexActor extends Actor with ActorLogging {
 
       // add document information (title, url and content) by document id
       documents.foreach(document => {
-        // TODO
+        // TODO: find document information
         document.setInformation("title", "url", "content")
       })
 

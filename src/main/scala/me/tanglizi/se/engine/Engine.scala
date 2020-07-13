@@ -11,7 +11,7 @@ class Engine {
 }
 
 object Engine {
-  // TODO
+  // TODO: implement below functions
   def getDocumentId: Long = 123
   def getTotalDocumentCount: Long = 123
   def getTotalWordCount: Long = 1230

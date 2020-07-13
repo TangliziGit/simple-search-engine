@@ -13,4 +13,7 @@ object Config {
 
   val INVERTED_INDEX_TABLE_FLUSH_SIZE: Long = 50
   val INDEX_TABLE_FLUSH_FREQ: Long = 50
+
+  val DOCUMENT_BM25_K: Double = 2
+  val DOCUMENT_BM25_B: Double = 0.75
 }

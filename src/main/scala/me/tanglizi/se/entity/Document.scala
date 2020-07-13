@@ -1,6 +1,7 @@
 package me.tanglizi.se.entity
 
 import me.tanglizi.se.engine.Engine
+import me.tanglizi.se.engine.config.Config
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -8,8 +9,6 @@ import scala.collection.mutable.ArrayBuffer
 class Document(documentId: Long,
                keywordsMap: Map[String, List[Int]],
                keywordCount: Long) {
-  // TODO
-  val Array(k, b) = Array(2, 0.75)
   var BM25: Double = 0
   var Array(title, url, content) = Array("", "", "")
 
@@ -20,7 +19,9 @@ class Document(documentId: Long,
     keywordsMap(keyword).size / keywordCount.toDouble
 
   def calculateBM25(keywords: Array[String], documentCountsOfKeyword: List[Int]): Double = {
+    val Array(k, b) = Array(Config.DOCUMENT_BM25_K, Config.DOCUMENT_BM25_B)
     var sum: Double = 0
+
     for ((keyword, documentCountOfKeyword) <- keywords.zip(documentCountsOfKeyword)) {
       val tf: Double = TF(keyword)
       val up: Double = IDF(documentCountOfKeyword) * tf * (1 + k)
