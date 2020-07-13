@@ -47,9 +47,9 @@ class IndexActor extends Actor with ActorLogging {
       }
 
       // TODO: set a flush size constant
-      if (Engine.invertedIndexTable.size > 50)
+      if (Engine.invertedIndexTable.size > Config.INVERTED_INDEX_TABLE_FLUSH_SIZE)
         Engine.storageActor ! FlushInvertedIndexRequest
-      if (Engine.indexTable.size % 50 == 0)
+      if (Engine.indexTable.size % Config.INDEX_TABLE_FLUSH_FREQ == 0)
         Engine.storageActor ! FlushIndexRequest
 
     case IndexSearchRequest(words, cb) =>

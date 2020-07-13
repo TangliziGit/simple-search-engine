@@ -10,4 +10,7 @@ object Config {
 
   val DEFAULT_AKKA_TIMEOUT: Timeout = Timeout(120.seconds)
   val DEFAULT_AWAIT_TIMEOUT: FiniteDuration = 120.seconds
+
+  val INVERTED_INDEX_TABLE_FLUSH_SIZE: Long = 50
+  val INDEX_TABLE_FLUSH_FREQ: Long = 50
 }
