@@ -1,10 +1,13 @@
 package me.tanglizi.se
 
 import me.tanglizi.se.engine.Engine
-import me.tanglizi.se.entity.{Document, InvertedItem}
+import me.tanglizi.se.entity.Document
 import me.tanglizi.se.entity.Protocol.{IndexRequest, IndexSearchRequest}
 import me.tanglizi.se.entity.Result.Token
 import org.junit.Test
+
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 @Test
 class IndexActorTest {
@@ -26,9 +29,10 @@ class IndexActorTest {
       println(index, offset)
     }}
 
-    Engine.invertedIndexTable.foreach{ case (keyword: String, item: InvertedItem) => {
-      println(keyword, item)
-    }}
+    Engine.invertedIndexTable.foreach{
+      case (keyword: String, item: mutable.Map[Long, ArrayBuffer[Int]]) =>
+        println(keyword, item)
+    }
   }
 
   @Test

@@ -2,7 +2,6 @@ package me.tanglizi.se.engine
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import me.tanglizi.se.engine.actor.{EngineActor, IndexActor, StorageActor, TokenizeActor}
-import me.tanglizi.se.entity.InvertedItem
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
