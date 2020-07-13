@@ -16,7 +16,7 @@ TokenizeActor
             ]
         ```
         ! IndexRequest(id, {content, url, title}, words)
-    - TokenizeSearchWordRequest(word)
+    - Done TokenizeSearchWordRequest(word)
         word segmentation 
         sender ! words
 
