@@ -27,6 +27,33 @@ class StorageActor extends Actor with ActorLogging {
       writer.println(content + "\n")
       writer.close()
 
+    case FlushMetaRequest =>
+      val file: File = new File(Config.STORAGE_PATH, Config.META_TABLE_FILE_NAME)
+
+      val writer = new PrintWriter(new FileWriter(file))
+      // TODO: flush totalDoc, totalWord, wordCountInDoc
+      writer.println("DC" + Engine.totalDocumentCount)
+      writer.println("WC" + Engine.totalWordCount)
+      for ((docId, wordCount) <- Engine.wordCountInDocument)
+        writer.println(s"$docId $wordCount")
+      writer.close()
+
+    case LoadMetaRequest =>
+      val file: File = new File(Config.STORAGE_PATH, Config.META_TABLE_FILE_NAME)
+
+      val reader = new BufferedReader(new FileReader(file))
+      reader.lines()
+        .forEach {
+          case s"DC$documentCount" =>
+            Engine.totalDocumentCount.set(documentCount.toLong)
+          case s"WC$wordCount" =>
+            Engine.totalWordCount.set(wordCount.toLong)
+          case s"$docId $wordCount" =>
+            Engine.wordCountInDocument.put(docId.toLong, wordCount.toLong)
+        }
+      reader.close()
+      sender ! true
+
     case FlushIndexRequest =>
       val file: File = new File(Config.STORAGE_PATH, Config.INDEX_TABLE_FILE_NAME)
 
@@ -46,6 +73,8 @@ class StorageActor extends Actor with ActorLogging {
           case s"$key $value" =>
             Engine.indexTable(key.toLong) = value.toLong
         }
+      reader.close()
+      sender ! true
 
     case FlushInvertedIndexRequest =>
       log.info("inverted index table will be flushed")

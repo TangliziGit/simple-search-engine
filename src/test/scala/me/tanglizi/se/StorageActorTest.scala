@@ -7,13 +7,14 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import akka.pattern._
 import akka.util.Timeout
-import me.tanglizi.se.entity.Protocol.{FindInvertedIndexItemRequest, FlushIndexRequest, FlushInvertedIndexRequest, IndexRequest, LoadIndexRequest, StoreContentRequest, TokenizeDocumentRequest}
+import me.tanglizi.se.engine.config.Config
+import me.tanglizi.se.entity.Protocol.{FindInvertedIndexItemRequest, FlushIndexRequest, FlushInvertedIndexRequest, FlushMetaRequest, IndexRequest, LoadIndexRequest, LoadMetaRequest, StoreContentRequest, TokenizeDocumentRequest}
 import me.tanglizi.se.entity.Result.Token
 import me.tanglizi.se.util.HashUtil
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success}
 
 
@@ -107,5 +108,21 @@ class StorageActorTest {
     }
 
     Thread.sleep(1000)
+  }
+
+  @Test
+  def testFlushMetaRequest(): Unit =
+    Engine.storageActor ! FlushMetaRequest
+
+  @Test
+  def testLoadMetaRequest(): Unit = {
+    implicit val timeout = Config.DEFAULT_AKKA_TIMEOUT
+
+    val result = Engine.storageActor ? LoadMetaRequest
+    Await.ready(result, Config.DEFAULT_AWAIT_TIMEOUT)
+
+    println(Engine.totalDocumentCount.get)
+    println(Engine.totalWordCount.get)
+    println(Engine.wordCountInDocument)
   }
 }
