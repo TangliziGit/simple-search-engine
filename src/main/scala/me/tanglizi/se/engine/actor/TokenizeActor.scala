@@ -26,7 +26,11 @@ class TokenizeActor extends Actor with ActorLogging {
   override def receive: Receive = {
     case TokenizeDocumentRequest(id, response) =>
       val (html, url) = (response.getResponseBody, response.getUri)
+
+      // find title by regex
       val title: String = TokenizeActor.titleRegex.findFirstIn(html).getOrElse("No Title")
+
+      // get page content by regex replace
       val content: String = {
         var content: String = html
         content = TokenizeActor.removeCodeRegex.replaceAllIn(content, "\n")
@@ -39,6 +43,8 @@ class TokenizeActor extends Actor with ActorLogging {
 
       val words: Array[String] = getSegments(content)
 
+      // convert tokenize result into word position list
+      // word -> [pos1, pos2]
       var position: Int = 0
       val positionMap = mutable.Map[String, mutable.ArrayBuffer[Int]]()
       for (word <- words) {
@@ -46,6 +52,7 @@ class TokenizeActor extends Actor with ActorLogging {
         position += word.length
       }
 
+      // wrap word position list into Token
       val result: Array[Token] = positionMap
         .map { case (word, positions) => Token(word, positions.toArray) }
         .toArray
@@ -56,6 +63,7 @@ class TokenizeActor extends Actor with ActorLogging {
       Engine.indexActor ! IndexRequest(id, content, result)
 
     case TokenizeSearchWordRequest(sentence) =>
+      // simply tokenize the search sentence
       val words: Array[String] = getSegments(sentence)
       sender ! words
   }

@@ -18,14 +18,19 @@ class StorageActor extends Actor with ActorLogging {
       val fileName: String = s"${hash % 5}.content"
       val file: File = new File(Config.STORAGE_PATH, fileName)
 
+      // return the file space, which means the document `offset` in this content file
       sender ! file.getTotalSpace
       log.info(s"$fileName (hash: $hash) will be chosen to be wrote the content")
+
+      // write content
       val writer = new PrintWriter(new FileWriter(file, true))
       writer.println(content + "\n")
       writer.close()
 
     case FlushIndexRequest =>
       val file: File = new File(Config.STORAGE_PATH, Config.INDEX_TABLE_FILE_NAME)
+
+      // write index table
       val writer = new PrintWriter(new FileWriter(file, true))
       for ((key, value) <- Engine.indexTable)
         writer.println(s"$key $value")
@@ -33,6 +38,8 @@ class StorageActor extends Actor with ActorLogging {
 
     case LoadIndexRequest =>
       val file: File = new File(Config.STORAGE_PATH, Config.INDEX_TABLE_FILE_NAME)
+
+      // read to load index table
       val reader = new BufferedReader(new FileReader(file))
       reader.lines()
         .forEach {
@@ -42,10 +49,13 @@ class StorageActor extends Actor with ActorLogging {
 
     case FlushInvertedIndexRequest =>
       log.info("inverted index table will be flushed")
+
+      // traverse inverted index table to restore
       for ((word, item) <- Engine.invertedIndexTable) {
         val hash: Long = HashUtil.hash(word)
         val fileName: String = s"${hash % 5}.invert"
         val file: File = new File(Config.STORAGE_PATH, fileName)
+
         val writer = new PrintWriter(new FileWriter(file, true))
 
         for ((docId, ps) <- item)

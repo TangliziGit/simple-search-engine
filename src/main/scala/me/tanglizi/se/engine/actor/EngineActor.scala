@@ -1,6 +1,5 @@
 package me.tanglizi.se.engine.actor
 
-import scala.concurrent.duration._
 import akka.pattern._
 import akka.actor.{Actor, ActorLogging}
 import akka.util.Timeout
@@ -19,11 +18,14 @@ class EngineActor extends Actor with ActorLogging {
 
     case SearchRequest(sentence, cb) =>
       implicit val timeout: Timeout = Config.DEFAULT_AKKA_TIMEOUT
+
+      // get words tokenized from searching sentence
       val words: Array[String] = {
         val wordsFuture: Future[Array[String]] = (Engine.tokenizeActor ? TokenizeSearchWordRequest(sentence)).mapTo[Array[String]]
         Await.result(wordsFuture, Config.DEFAULT_AWAIT_TIMEOUT)
       }
 
+      // start searching, and use callback function to process documents
       Engine.indexActor ! IndexSearchRequest(words, cb)
   }
 
