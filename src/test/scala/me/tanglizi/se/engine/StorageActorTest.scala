@@ -1,21 +1,18 @@
-package me.tanglizi.se
+package me.tanglizi.se.engine
 
-import me.tanglizi.se.engine.Engine
-import org.junit.Test
-
-import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 import akka.pattern._
 import akka.util.Timeout
-import com.sun.deploy.panel.JreFindDialog
 import me.tanglizi.se.engine.config.Config
 import me.tanglizi.se.entity.DocumentInfo
-import me.tanglizi.se.entity.Protocol.{FindDocumentRequest, FindInvertedIndexItemRequest, FlushIndexRequest, FlushInvertedIndexRequest, FlushMetaRequest, IndexRequest, LoadIndexRequest, LoadMetaRequest, StoreDocumentRequest, TokenizeDocumentRequest}
+import me.tanglizi.se.entity.Protocol._
 import me.tanglizi.se.entity.Result.Token
 import me.tanglizi.se.util.HashUtil
+import org.junit.Test
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success}
 

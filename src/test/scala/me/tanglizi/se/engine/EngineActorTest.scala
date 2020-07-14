@@ -1,10 +1,9 @@
-package me.tanglizi.se
+package me.tanglizi.se.engine
 
-import org.junit._
-import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.entity.Document
 import me.tanglizi.se.entity.Protocol.{AddRequest, DeleteRequest, SearchRequest}
 import org.asynchttpclient.{AsyncHttpClient, Dsl, Response}
+import org.junit._
 
 @Test
 class EngineActorTest {

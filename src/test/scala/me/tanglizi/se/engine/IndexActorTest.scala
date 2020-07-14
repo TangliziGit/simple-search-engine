@@ -1,17 +1,15 @@
-package me.tanglizi.se
+package me.tanglizi.se.engine
 
-import scala.concurrent.duration._
 import akka.pattern._
-import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.engine.config.Config
-import me.tanglizi.se.entity.{Document, DocumentInfo}
-import me.tanglizi.se.entity.Protocol.{FlushIndexRequest, FlushInvertedIndexRequest, FlushMetaRequest, IndexRequest, IndexSearchRequest, LoadIndexRequest, LoadMetaRequest}
+import me.tanglizi.se.entity.DocumentInfo
+import me.tanglizi.se.entity.Protocol._
 import me.tanglizi.se.entity.Result.Token
 import org.junit.Test
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 
 @Test
 class IndexActorTest {

@@ -1,13 +1,12 @@
-package me.tanglizi.se
+package me.tanglizi.se.engine
 
-import scala.concurrent.duration._
 import akka.pattern._
 import akka.util.Timeout
-import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.entity.Protocol.{TokenizeDocumentRequest, TokenizeSearchWordRequest}
 import org.asynchttpclient.{Dsl, Response}
 import org.junit.Test
 
+import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
 @Test
