@@ -3,7 +3,7 @@ package me.tanglizi.se
 import org.junit._
 import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.entity.Document
-import me.tanglizi.se.entity.Protocol.{AddRequest, SearchRequest}
+import me.tanglizi.se.entity.Protocol.{AddRequest, DeleteRequest, SearchRequest}
 import org.asynchttpclient.{AsyncHttpClient, Dsl, Response}
 
 @Test
@@ -46,4 +46,24 @@ class EngineActorTest {
     Thread.sleep(2000)
     println("done")
   }
+
+  @Test
+  def testDeleteRequest(): Unit = {
+    Engine.loadData()
+
+    val urls: Array[String] = Array(
+      "https://www.cnblogs.com",
+      "https://www.cnblogs.com/tanglizi/p/11515409.html",
+      "https://www.cnblogs.com/tanglizi/",
+    )
+
+    for (url <- urls)
+      Engine.engineActor ! DeleteRequest(url)
+
+    Thread.sleep(2000)
+
+    Engine.rearrangeData()
+    Thread.sleep(2000)
+  }
+
 }

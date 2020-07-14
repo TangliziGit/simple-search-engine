@@ -15,6 +15,29 @@ import scala.collection.mutable.ArrayBuffer
 
 class StorageActor extends Actor with ActorLogging {
 
+  def flushIndexTable(): Unit = {
+    val file: File = new File(Config.STORAGE_PATH, Config.INDEX_TABLE_FILE_NAME)
+
+    // write index table
+    val writer = new PrintWriter(new FileWriter(file, false))
+    for ((key, (hash, offset)) <- Engine.indexTable)
+      writer.println(s"$key $hash $offset")
+    writer.close()
+  }
+
+  def flushMetaTable(): Unit = {
+    val file: File = new File(Config.STORAGE_PATH, Config.META_TABLE_FILE_NAME)
+
+    val writer = new PrintWriter(new FileWriter(file))
+    writer.println("DC" + Engine.totalDocumentCount)
+    writer.println("WC" + Engine.totalWordCount)
+    for ((docId, wordCount) <- Engine.wordCountInDocument) {
+      val url: String = Engine.documentIdToUrl(docId)
+      writer.println(s"$docId $wordCount $url")
+    }
+    writer.close()
+  }
+
   def randomAccessFileReadLineForChinese(reader: RandomAccessFile): String = {
     val content: String = reader.readLine();
     val bytes: Array[Byte] = content.toCharArray.map(_.toByte)
@@ -110,6 +133,7 @@ class StorageActor extends Actor with ActorLogging {
       val wordCount = Engine.wordCountInDocument(documentId)
       Engine.totalWordCount.addAndGet(-wordCount)
       Engine.totalDocumentCount.decrementAndGet()
+      Engine.wordCountInDocument.remove(documentId)
     }
   }
 
@@ -168,16 +192,7 @@ class StorageActor extends Actor with ActorLogging {
       sender ! DocumentInfo(title, url, content)
 
     case FlushMetaRequest =>
-      val file: File = new File(Config.STORAGE_PATH, Config.META_TABLE_FILE_NAME)
-
-      val writer = new PrintWriter(new FileWriter(file))
-      writer.println("DC" + Engine.totalDocumentCount)
-      writer.println("WC" + Engine.totalWordCount)
-      for ((docId, wordCount) <- Engine.wordCountInDocument) {
-        val url: String = Engine.documentIdToUrl(docId)
-        writer.println(s"$docId $wordCount $url")
-      }
-      writer.close()
+      flushMetaTable()
       sender ! true
 
     case LoadMetaRequest =>
@@ -199,13 +214,7 @@ class StorageActor extends Actor with ActorLogging {
       sender ! true
 
     case FlushIndexRequest =>
-      val file: File = new File(Config.STORAGE_PATH, Config.INDEX_TABLE_FILE_NAME)
-
-      // write index table
-      val writer = new PrintWriter(new FileWriter(file, false))
-      for ((key, (hash, offset)) <- Engine.indexTable)
-        writer.println(s"$key $hash $offset")
-      writer.close()
+      flushIndexTable()
       sender ! true
 
     case LoadIndexRequest =>
@@ -225,24 +234,33 @@ class StorageActor extends Actor with ActorLogging {
       log.info("inverted index table will be flushed")
 
       // traverse inverted index table to restore
+      println("1")
       for ((word, item) <- Engine.invertedIndexTable) {
         val hash: Long = HashUtil.hash(word)
+        println("1")
         val fileName: String = s"${hash % Config.WORD_HASH_SIZE}.invert"
+        println("1")
         val file: File = new File(Config.STORAGE_PATH, fileName)
+        println("1")
 
         val writer = new RandomAccessFile(file, "rw")
+        println("1")
         writer.seek(writer.length())
+        println("1")
 
         // use exclusive lock to write files
         val channel: FileChannel = writer.getChannel
         val xLock: FileLock = channel.lock()
+        println("1")
 
         for ((docId, ps) <- item)
           for (p <- ps)
             writer.write(s"$word $docId $p${Config.CRLF}".getBytes())
 
+        println("1")
         xLock.release()
         writer.close()
+        println("1")
       }
       Engine.invertedIndexTable.clear()
       sender ! true
@@ -273,7 +291,9 @@ class StorageActor extends Actor with ActorLogging {
       rearrangeIndexTable()
       rearrangeMetaTable()
 
-      Engine.flushData()
+      // flush index table and meta table
+      flushIndexTable()
+      flushMetaTable()
       sender ! true
   }
 

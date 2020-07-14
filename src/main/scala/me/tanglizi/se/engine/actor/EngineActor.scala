@@ -29,6 +29,13 @@ class EngineActor extends Actor with ActorLogging {
 
       // start searching, and use callback function to process documents
       Engine.indexActor ! IndexSearchRequest(words, cb)
+
+    case DeleteRequest(url) =>
+      val documentId: Long = Engine.documentUrlToId(url)
+      Engine.deletedDocumentIds.add(documentId)
+
+      if (Engine.deletedDocumentIds.size >= Config.DELETED_DOCUMENTS_SIZE)
+        Engine.storageActor ! RearrangeTablesRequest
   }
 
 }

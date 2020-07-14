@@ -8,6 +8,7 @@ object Protocol {
   // EngineActor
   case class AddRequest(response: Response)
   case class SearchRequest(word: String, cb: List[Document] => Any)
+  case class DeleteRequest(documentUrl: String)
 
   // TokenizeActor
   case class TokenizeDocumentRequest(id: Long, response: Response)

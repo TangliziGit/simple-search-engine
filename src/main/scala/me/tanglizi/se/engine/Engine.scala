@@ -7,7 +7,7 @@ import akka.pattern._
 import akka.actor.{ActorRef, ActorSystem, Props}
 import me.tanglizi.se.engine.actor.{EngineActor, IndexActor, StorageActor, TokenizeActor}
 import me.tanglizi.se.engine.config.Config
-import me.tanglizi.se.entity.Protocol.{FlushIndexRequest, FlushInvertedIndexRequest, FlushMetaRequest, LoadIndexRequest, LoadMetaRequest}
+import me.tanglizi.se.entity.Protocol.{FlushIndexRequest, FlushInvertedIndexRequest, FlushMetaRequest, LoadIndexRequest, LoadMetaRequest, RearrangeTablesRequest}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -70,5 +70,18 @@ object Engine {
 
     for (file <- dir.listFiles())
       file.delete()
+  }
+
+  def asyncRearrangeData(): Unit = {
+    Engine.storageActor ! RearrangeTablesRequest
+  }
+
+  def rearrangeData(): Unit = {
+    implicit val timeout = Config.DEFAULT_AKKA_TIMEOUT
+
+    val result = Engine.storageActor ? RearrangeTablesRequest
+
+    println("rearrange tables")
+    Await.ready(result, Config.DEFAULT_AWAIT_TIMEOUT)
   }
 }
