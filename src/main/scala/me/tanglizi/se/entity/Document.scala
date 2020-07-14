@@ -42,7 +42,7 @@ class Document(val documentId: Long,
     this.documentInfo = documentInfo
 
   override def toString: String =
-    s"Document[$documentId, ${documentInfo.title}, ${documentInfo.url}, ${documentInfo.content}, ($BM25)]"
+    s"Document[$documentId, $documentInfo, ($BM25)]"
 }
 
 object Document {

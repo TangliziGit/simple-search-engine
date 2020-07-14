@@ -58,7 +58,6 @@ class TokenizeActor extends Actor with ActorLogging {
         .map { case (word, positions) => Token(word, positions.toArray) }
         .toArray
 
-      log.info(s"tokenizer result: ${result.mkString(", ")}")
       log.info(s"content title: $title, url: $url")
 
       val documentInfo: DocumentInfo = DocumentInfo(title, url.toUrl, content)

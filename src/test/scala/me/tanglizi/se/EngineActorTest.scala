@@ -12,13 +12,15 @@ class EngineActorTest {
 
   @Test
   def testSearchRequest(): Unit = {
-    val sentence: String = "我 天安门"
+    Engine.loadData()
+
+    val sentence: String = "IT"
     val callback: List[Document] => Unit =
-      docs => println(docs)
+      docs => println(s"${docs.mkString("\n")}")
 
     Engine.engineActor ! SearchRequest(sentence, callback)
 
-    Thread.sleep(1000)
+    Thread.sleep(2000)
   }
 
   @Test
@@ -35,9 +37,14 @@ class EngineActorTest {
     val responses: Array[Response] =
       urls.map(url => httpClient.prepareGet(url).execute().get())
 
+    Engine.eraseData()
     for (response <- responses)
       Engine.engineActor ! AddRequest(response)
 
-    Thread.sleep(20000)
+    Thread.sleep(2000)
+
+    Engine.flushData()
+    Thread.sleep(2000)
+    println("done")
   }
 }

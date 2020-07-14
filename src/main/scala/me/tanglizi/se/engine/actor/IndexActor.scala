@@ -50,7 +50,7 @@ class IndexActor extends Actor with ActorLogging {
       // maintain total count
       val wordCount: Int = tokens.map(_.position.length).sum
       Engine.wordCountInDocument.getOrElseUpdate(id, wordCount)
-      Engine.totalDocumentCount.incrementAndGet()
+      // Engine.totalDocumentCount.incrementAndGet()
       Engine.totalWordCount.addAndGet(wordCount)
 
       // conditional flush
@@ -81,7 +81,7 @@ class IndexActor extends Actor with ActorLogging {
       // build Document list, and sort it
       val documents: List[Document] = Document
         .fromDs(keywordPositionsMaps, words)
-        .sortBy(document => document.BM25)
+        .sortBy(document => -document.BM25)
 
       // add document information (title, url and content) by document id
       val documentInfoFutures: List[Future[DocumentInfo]] = documents.map(document =>
