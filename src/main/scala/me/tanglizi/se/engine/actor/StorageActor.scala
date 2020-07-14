@@ -35,17 +35,16 @@ class StorageActor extends Actor with ActorLogging {
       val offset: Long = writer.length()
 
       // use exclusive lock to write the file
-      val fileLock: FileLock = channel.lock()
+      val xLock: FileLock = channel.lock()
       writer.seek(offset)
-      writer.writeUTF(documentInfo.title + "\n")
-      writer.writeUTF(documentInfo.url + "\n")
-      writer.writeUTF(documentInfo.content + "\n" + Config.CONTENT_SPLITTER + "\n")
+      writer.write(s"${documentInfo.title}${Config.CRLF}".getBytes())
+      writer.write(s"${documentInfo.url}${Config.CRLF}".getBytes())
+      writer.write(s"${documentInfo.content}${Config.CRLF + Config.CONTENT_SPLITTER + Config.CRLF}".getBytes())
       sender ! offset
-      fileLock.release()
+      xLock.release()
       writer.close()
 
     case FindDocumentRequest(documentId) =>
-      // TODO: should we use shared lock to read file?
       val indexItem: (Int, Long) = Engine.indexTable(documentId)
       val Array(documentHash, offset) = Array(indexItem._1, indexItem._2)
 
@@ -53,6 +52,10 @@ class StorageActor extends Actor with ActorLogging {
       val fileName: String = s"${documentHash % Config.CONTENT_HASH_SIZE}.content"
       val file: File = new File(Config.STORAGE_PATH, fileName)
       val reader = new RandomAccessFile(file, "r")
+
+      // use shared lock to read the file
+      val channel: FileChannel = reader.getChannel
+      val sLock: FileLock = channel.lock(0, Long.MaxValue, true)
       reader.seek(offset)
 
       val title: String = randomAccessFileReadLineForChinese(reader)
@@ -68,6 +71,8 @@ class StorageActor extends Actor with ActorLogging {
           content += line
         content
       }
+      sLock.release()
+      reader.close()
       sender ! DocumentInfo(title, url, content)
 
     case FlushMetaRequest =>
@@ -121,7 +126,6 @@ class StorageActor extends Actor with ActorLogging {
       sender ! true
 
     case FlushInvertedIndexRequest =>
-      // TODO: should we use exclusive lock to write file?
       log.info("inverted index table will be flushed")
 
       // traverse inverted index table to restore
@@ -130,14 +134,21 @@ class StorageActor extends Actor with ActorLogging {
         val fileName: String = s"${hash % Config.WORD_HASH_SIZE}.invert"
         val file: File = new File(Config.STORAGE_PATH, fileName)
 
-        val writer = new PrintWriter(new FileWriter(file, true))
+        val writer = new RandomAccessFile(file, "rw")
+        writer.seek(writer.length())
+
+        // use exclusive lock to write files
+        val channel: FileChannel = writer.getChannel
+        val xLock: FileLock = channel.lock()
 
         for ((docId, ps) <- item)
           for (p <- ps)
-            writer.println(s"$word $docId $p")
+            writer.write(s"$word $docId $p${Config.CRLF}".getBytes())
 
+        xLock.release()
         writer.close()
       }
+      Engine.invertedIndexTable.clear()
       sender ! true
 
     case FindInvertedIndexItemRequest(word) =>
@@ -153,7 +164,6 @@ class StorageActor extends Actor with ActorLogging {
           case s"$keyword $docId $position" if keyword == word =>
             val arr: ArrayBuffer[Int] = item.getOrElseUpdate(docId.toLong, ArrayBuffer[Int]())
             arr += position.toInt
-            // log.info(s"OKOKOKOK $keyword $docId $position")
           case _ =>
         }
 
