@@ -1,6 +1,7 @@
 package me.tanglizi.se.engine.actor
 
 import java.io.{BufferedReader, File, FileReader, FileWriter, PrintWriter, RandomAccessFile}
+import java.nio.channels.{FileChannel, FileLock}
 
 import akka.actor.{Actor, ActorLogging}
 import me.tanglizi.se.engine.Engine
@@ -26,17 +27,25 @@ class StorageActor extends Actor with ActorLogging {
       val file: File = new File(Config.STORAGE_PATH, fileName)
 
       // return the file space, which means the document `offset` in this content file
-      sender ! file.getTotalSpace
       log.info(s"$fileName (hash: $hash) will be chosen to be wrote the content")
 
       // write content
-      val writer = new PrintWriter(new FileWriter(file, true))
-      writer.println(documentInfo.title)
-      writer.println(documentInfo.url)
-      writer.println(documentInfo.content + "\n" + Config.CONTENT_SPLITTER)
+      val writer = new RandomAccessFile(file, "rw")
+      val channel: FileChannel = writer.getChannel
+      val offset: Long = writer.length()
+
+      // use exclusive lock to write the file
+      val fileLock: FileLock = channel.lock()
+      writer.seek(offset)
+      writer.writeUTF(documentInfo.title + "\n")
+      writer.writeUTF(documentInfo.url + "\n")
+      writer.writeUTF(documentInfo.content + "\n" + Config.CONTENT_SPLITTER + "\n")
+      sender ! offset
+      fileLock.release()
       writer.close()
 
     case FindDocumentRequest(documentId) =>
+      // TODO: should we use shared lock to read file?
       val indexItem: (Int, Long) = Engine.indexTable(documentId)
       val Array(documentHash, offset) = Array(indexItem._1, indexItem._2)
 
@@ -46,7 +55,7 @@ class StorageActor extends Actor with ActorLogging {
       val reader = new RandomAccessFile(file, "r")
       reader.seek(offset)
 
-      val title: String = reader.readLine()
+      val title: String = randomAccessFileReadLineForChinese(reader)
       val url: String = reader.readLine()
       val content: String = {
         var content: String = ""
@@ -70,6 +79,7 @@ class StorageActor extends Actor with ActorLogging {
       for ((docId, wordCount) <- Engine.wordCountInDocument)
         writer.println(s"$docId $wordCount")
       writer.close()
+      sender ! true
 
     case LoadMetaRequest =>
       val file: File = new File(Config.STORAGE_PATH, Config.META_TABLE_FILE_NAME)
@@ -91,10 +101,11 @@ class StorageActor extends Actor with ActorLogging {
       val file: File = new File(Config.STORAGE_PATH, Config.INDEX_TABLE_FILE_NAME)
 
       // write index table
-      val writer = new PrintWriter(new FileWriter(file, true))
+      val writer = new PrintWriter(new FileWriter(file, false))
       for ((key, (hash, offset)) <- Engine.indexTable)
         writer.println(s"$key $hash $offset")
       writer.close()
+      sender ! true
 
     case LoadIndexRequest =>
       val file: File = new File(Config.STORAGE_PATH, Config.INDEX_TABLE_FILE_NAME)
@@ -110,6 +121,7 @@ class StorageActor extends Actor with ActorLogging {
       sender ! true
 
     case FlushInvertedIndexRequest =>
+      // TODO: should we use exclusive lock to write file?
       log.info("inverted index table will be flushed")
 
       // traverse inverted index table to restore
@@ -124,12 +136,12 @@ class StorageActor extends Actor with ActorLogging {
           for (p <- ps)
             writer.println(s"$word $docId $p")
 
-        log.info(s"$word has been flushed in ${hash % Config.WORD_HASH_SIZE}.invert")
         writer.close()
       }
+      sender ! true
 
     case FindInvertedIndexItemRequest(word) =>
-      log.info(s"find inverted index item of $word")
+      // TODO: should we use shared lock to read file?
       val hash: Long = HashUtil.hash(word)
       val fileName: String = s"${hash % Config.WORD_HASH_SIZE}.invert"
       val file: File = new File(Config.STORAGE_PATH, fileName)
