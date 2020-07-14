@@ -12,7 +12,7 @@ class EngineActorTest {
   def testSearchRequest(): Unit = {
     Engine.loadData()
 
-    val sentence: String = "程序员问答社区"
+    val sentence: String = "Spring"
     val callback: List[Document] => Unit =
       docs => println(s"result: \n${docs.mkString("\n")}")
 

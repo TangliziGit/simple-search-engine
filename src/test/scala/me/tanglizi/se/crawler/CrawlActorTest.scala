@@ -14,7 +14,7 @@ class CrawlActorTest {
       val host: String = response.getUri.getHost
       val scheme: String = response.getUri.getScheme
       val result: String = CrawlActor.imgRegex.replaceAllIn(response.getResponseBody(), "")
-      CrawlActor.urlRegex.findAllIn(result)
+      CrawlActor.hrefRegex.findAllIn(result)
         .map(url => {
           if (url.contains("http")) url
           else s"$scheme://$host$url"

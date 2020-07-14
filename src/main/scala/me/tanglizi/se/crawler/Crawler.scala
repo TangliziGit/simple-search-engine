@@ -22,7 +22,7 @@ object Crawler {
   // var urlVisitedFilter = new ConcurrentHashMap[String, Boolean]()
   var urlVisitedFilter = mutable.Set[String]()
 
-  def urlSetIsFull(): Boolean = urlSet.size >= 50
+  def urlSetIsFull(): Boolean = urlSet.size >= Config.MAX_URL_SET_SIZE
   def urlFilter(url: String): Boolean = url.contains("cnblogs")
 
   def initMaintain(): Unit = {

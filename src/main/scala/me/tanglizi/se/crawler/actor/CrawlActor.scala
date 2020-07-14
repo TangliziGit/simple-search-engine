@@ -14,11 +14,12 @@ class CrawlActor extends Actor with ActorLogging {
     val host: String = response.getUri.getHost
     val scheme: String = response.getUri.getScheme
     val result: String = CrawlActor.imgRegex.replaceAllIn(response.getResponseBody(), "")
-    CrawlActor.urlRegex.findAllIn(result)
+    CrawlActor.hrefRegex.findAllIn(result)
       .map(url => {
         if (url.contains("http")) url
         else s"$scheme://$host$url"
       })
+      .filter(url => CrawlActor.urlRegex.matches(url))
       .toArray
   }
 
@@ -38,6 +39,7 @@ class CrawlActor extends Actor with ActorLogging {
 object CrawlActor {
 
   val imgRegex: Regex = new Regex("(?<=<img).*?(?=>)")
-  val urlRegex: Regex = new Regex("(?<=href=\").*?(?=\")")
+  val hrefRegex: Regex = new Regex("(?<=href=\").*?(?=\")")
+  val urlRegex: Regex = new Regex("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()!@:%_\\+.~#?&\\/\\/=]*)")
 
 }

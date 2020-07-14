@@ -17,9 +17,10 @@ class CrawlerTest {
       "https://q.cnblogs.com/"
     )
 
+    Engine.eraseData()
     Crawler.dispatchActor ! EnqueueCrawlRequest(urls)
 
-    Thread.sleep(20000)
+    Thread.sleep(1000*60*2)
     Engine.flushData()
   }
 

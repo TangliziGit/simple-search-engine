@@ -35,7 +35,7 @@ class EngineActor extends Actor with ActorLogging {
       val documentId: Long = Engine.documentUrlToId(url)
       Engine.deletedDocumentIds.add(documentId)
 
-      if (Engine.deletedDocumentIds.size >= Config.DELETED_DOCUMENTS_SIZE)
+      if (Engine.deletedDocumentIds.size >= Config.MAX_DELETED_DOCUMENTS_SIZE)
         Engine.storageActor ! RearrangeTablesRequest
   }
 

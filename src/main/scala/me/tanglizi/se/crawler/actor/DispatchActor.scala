@@ -2,8 +2,9 @@ package me.tanglizi.se.crawler.actor
 
 import akka.pattern._
 import akka.actor.{Actor, ActorLogging}
+import me.tanglizi.se.config.Config
 import me.tanglizi.se.crawler.Crawler
-import me.tanglizi.se.crawler.Crawler.{urlVisitedFilter, urlSet}
+import me.tanglizi.se.crawler.Crawler.{urlSet, urlVisitedFilter}
 import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.entity.Protocol.{CrawlRequest, EnqueueCrawlRequest}
 
@@ -18,7 +19,7 @@ class DispatchActor extends Actor with ActorLogging {
 
       loop.breakable {
         for (url <- urls if !urlVisitedFilter.contains(url) && Crawler.urlFilter(url)) {
-          if (urlVisitedFilter.size >= 50 || (Crawler.urlSetIsFull() && urlVisitedFilter.size >= urlSet.size))
+          if (urlVisitedFilter.size >= Config.MAX_URL_SET_SIZE || (Crawler.urlSetIsFull() && urlVisitedFilter.size >= urlSet.size))
             loop.break()
 
           if (!Crawler.urlSetIsFull()) {
