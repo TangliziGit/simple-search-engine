@@ -1,7 +1,6 @@
 package me.tanglizi.se
 
 import org.junit._
-import Assert._
 import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.entity.Document
 import me.tanglizi.se.entity.Protocol.{AddRequest, SearchRequest}
@@ -14,9 +13,9 @@ class EngineActorTest {
   def testSearchRequest(): Unit = {
     Engine.loadData()
 
-    val sentence: String = "IT"
+    val sentence: String = "程序员问答社区"
     val callback: List[Document] => Unit =
-      docs => println(s"${docs.mkString("\n")}")
+      docs => println(s"result: \n${docs.mkString("\n")}")
 
     Engine.engineActor ! SearchRequest(sentence, callback)
 

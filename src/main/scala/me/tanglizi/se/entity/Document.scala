@@ -22,7 +22,8 @@ class Document(val documentId: Long,
     val Array(k, b) = Array(Config.DOCUMENT_BM25_K, Config.DOCUMENT_BM25_B)
     var sum: Double = 0
 
-    for ((keyword, documentCountOfKeyword) <- keywords.zip(documentCountsOfKeyword)) {
+    for ((keyword, documentCountOfKeyword) <- keywords.zip(documentCountsOfKeyword)
+         if keywordsMap contains keyword) {
       val tf: Double = TF(keyword)
       val totalWordCount: Long = Engine.totalWordCount.get()
       val totalDocumentCount: Long = Engine.totalDocumentCount.get()

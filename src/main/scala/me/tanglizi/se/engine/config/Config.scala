@@ -5,6 +5,7 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 
 object Config {
+  val CRLF: String = System.getProperty("line.separator")
   val STORAGE_PATH: String = "/home/tanglizi/tmp/se"
   val INDEX_TABLE_FILE_NAME: String = "indexTable.data"
   val META_TABLE_FILE_NAME: String = "metaTable.data"
