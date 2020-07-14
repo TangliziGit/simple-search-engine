@@ -5,7 +5,7 @@ import java.nio.channels.{FileChannel, FileLock}
 
 import akka.actor.{Actor, ActorLogging}
 import me.tanglizi.se.engine.Engine
-import me.tanglizi.se.engine.config.Config
+import me.tanglizi.se.config.Config
 import me.tanglizi.se.entity.DocumentInfo
 import me.tanglizi.se.entity.Protocol._
 import me.tanglizi.se.util.HashUtil
@@ -236,7 +236,7 @@ class StorageActor extends Actor with ActorLogging {
       // traverse inverted index table to restore
       println("1")
       for ((word, item) <- Engine.invertedIndexTable) {
-        val hash: Long = HashUtil.hash(word)
+        val hash: Long = HashUtil.hashMurmur3(word)
         println("1")
         val fileName: String = s"${hash % Config.WORD_HASH_SIZE}.invert"
         println("1")
@@ -267,7 +267,7 @@ class StorageActor extends Actor with ActorLogging {
 
     case FindInvertedIndexItemRequest(word) =>
       // TODO: should we use shared lock to read file?
-      val hash: Long = HashUtil.hash(word)
+      val hash: Long = HashUtil.hashMurmur3(word)
       val fileName: String = s"${hash % Config.WORD_HASH_SIZE}.invert"
       val file: File = new File(Config.STORAGE_PATH, fileName)
       val reader = new BufferedReader(new FileReader(file))

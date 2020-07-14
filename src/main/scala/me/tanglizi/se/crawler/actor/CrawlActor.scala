@@ -1,8 +1,9 @@
 package me.tanglizi.se.crawler.actor
 
 import akka.actor.{Actor, ActorLogging}
+import me.tanglizi.se.crawler.CrawlerDispatcher
 import me.tanglizi.se.engine.Engine
-import me.tanglizi.se.entity.Protocol.{AddRequest, CrawlRequest}
+import me.tanglizi.se.entity.Protocol.{AddRequest, CrawlRequest, EnqueueCrawlRequest}
 import org.asynchttpclient.{AsyncHttpClient, Dsl, Response}
 
 import scala.util.matching.Regex
@@ -28,7 +29,7 @@ class CrawlActor extends Actor with ActorLogging {
       val urls: Array[String] = getUrlsFromResponse(response)
 
       Engine.engineActor ! AddRequest(response)
-      sender ! urls
+      CrawlerDispatcher.dispatchActor ! EnqueueCrawlRequest(urls)
   }
 
 }

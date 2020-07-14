@@ -1,7 +1,7 @@
 package me.tanglizi.se.entity
 
 import me.tanglizi.se.engine.Engine
-import me.tanglizi.se.engine.config.Config
+import me.tanglizi.se.config.Config
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

@@ -5,6 +5,7 @@ import org.asynchttpclient.Response
 
 object Protocol {
 
+  // SearchEngineActorSystem
   // EngineActor
   case class AddRequest(response: Response)
   case class SearchRequest(word: String, cb: List[Document] => Any)
@@ -29,7 +30,11 @@ object Protocol {
   case class FindInvertedIndexItemRequest(word: String)
   case class RearrangeTablesRequest()
 
+  // CrawlActorSystem
   // CrawlActor
   case class CrawlRequest(url: String)
+
+  // DispatchActor
+  case class EnqueueCrawlRequest(urls: Array[String])
 
 }

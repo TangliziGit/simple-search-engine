@@ -1,4 +1,4 @@
-package me.tanglizi.se.engine.config
+package me.tanglizi.se.config
 
 import akka.util.Timeout
 
@@ -9,6 +9,7 @@ object Config {
   val STORAGE_PATH: String = "/home/tanglizi/tmp/se"
   val INDEX_TABLE_FILE_NAME: String = "indexTable.data"
   val META_TABLE_FILE_NAME: String = "metaTable.data"
+  val URL_SET: String = "urls.data"
 
   val DEFAULT_AKKA_TIMEOUT: Timeout = Timeout(120.seconds)
   val DEFAULT_AWAIT_TIMEOUT: FiniteDuration = 120.seconds

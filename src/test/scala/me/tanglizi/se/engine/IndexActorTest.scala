@@ -1,7 +1,7 @@
 package me.tanglizi.se.engine
 
 import akka.pattern._
-import me.tanglizi.se.engine.config.Config
+import me.tanglizi.se.config.Config
 import me.tanglizi.se.entity.DocumentInfo
 import me.tanglizi.se.entity.Protocol._
 import me.tanglizi.se.entity.Result.Token

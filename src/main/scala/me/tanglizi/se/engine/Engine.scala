@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicLong
 import akka.pattern._
 import akka.actor.{ActorRef, ActorSystem, Props}
 import me.tanglizi.se.engine.actor.{EngineActor, IndexActor, StorageActor, TokenizeActor}
-import me.tanglizi.se.engine.config.Config
+import me.tanglizi.se.config.Config
 import me.tanglizi.se.entity.Protocol.{FlushIndexRequest, FlushInvertedIndexRequest, FlushMetaRequest, LoadIndexRequest, LoadMetaRequest, RearrangeTablesRequest}
 
 import scala.collection.mutable

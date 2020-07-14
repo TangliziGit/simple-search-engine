@@ -2,7 +2,7 @@ package me.tanglizi.se.engine
 
 import akka.pattern._
 import akka.util.Timeout
-import me.tanglizi.se.engine.config.Config
+import me.tanglizi.se.config.Config
 import me.tanglizi.se.entity.DocumentInfo
 import me.tanglizi.se.entity.Protocol._
 import me.tanglizi.se.entity.Result.Token
@@ -25,7 +25,7 @@ class StorageActorTest {
     implicit val timeout: Timeout = Timeout(5.seconds)
     val content: String = "我爱北京天安门"
     val documentInfo = DocumentInfo("title", "url", content)
-    val hash: Long = HashUtil.hash(content)
+    val hash: Long = HashUtil.hashMurmur3(content)
 
     val future: Future[Long] = (Engine.storageActor ? StoreDocumentRequest(hash, documentInfo)).mapTo[Long]
 
@@ -41,7 +41,7 @@ class StorageActorTest {
 
   @Test
   def testFindDocumentRequest(): Unit = {
-    Engine.indexTable(0) = (HashUtil.hash("我爱北京天安门"), 0)
+    Engine.indexTable(0) = (HashUtil.hashMurmur3("我爱北京天安门"), 0)
 
     implicit val timeout: Timeout = Timeout(5.seconds)
     val documentInfoFuture = (Engine.storageActor ? FindDocumentRequest(0)).mapTo[DocumentInfo]
@@ -58,7 +58,7 @@ class StorageActorTest {
     for (i <- Range(1, 10)) {
       val newContent: String = content + i.toString
       val newDocumentInfo = DocumentInfo("title", "url", newContent)
-      val hash: Int = HashUtil.hash(newContent)
+      val hash: Int = HashUtil.hashMurmur3(newContent)
 
       val future: Future[Long] =
         (Engine.storageActor ? StoreDocumentRequest(hash, newDocumentInfo)).mapTo[Long]

@@ -5,7 +5,7 @@ import akka.actor.{Actor, ActorLogging}
 import akka.pattern._
 import akka.util.Timeout
 import me.tanglizi.se.engine.Engine
-import me.tanglizi.se.engine.config.Config
+import me.tanglizi.se.config.Config
 import me.tanglizi.se.entity.{Document, DocumentInfo}
 import me.tanglizi.se.entity.Protocol._
 import me.tanglizi.se.util.HashUtil
@@ -26,7 +26,7 @@ class IndexActor extends Actor with ActorLogging {
 
       // get hash code from document content
       // used to determine the file name this document locates
-      val documentHash: Int = HashUtil.hash(documentInfo.content)
+      val documentHash: Int = HashUtil.hashMurmur3(documentInfo.content)
       val offsetFuture: Future[Long] =
         (Engine.storageActor ? StoreDocumentRequest(documentHash, documentInfo)).mapTo[Long]
 
