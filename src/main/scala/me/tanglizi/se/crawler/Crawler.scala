@@ -1,6 +1,7 @@
 package me.tanglizi.se.crawler
 
 import java.io.{BufferedReader, File, FileReader, FileWriter, PrintWriter}
+import java.util.concurrent.ConcurrentHashMap
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import me.tanglizi.se.config.Config
@@ -8,7 +9,7 @@ import me.tanglizi.se.crawler.actor.{CrawlActor, DispatchActor}
 
 import scala.collection.mutable
 
-object CrawlerDispatcher {
+object Crawler {
 
   val urlSet = mutable.Set[String]()
   val urlHashMap = mutable.Map[String, String]()
@@ -18,11 +19,15 @@ object CrawlerDispatcher {
   val crawlActor: ActorRef = actorSystem.actorOf(Props[CrawlActor], name = "crawlActor")
   val dispatchActor: ActorRef = actorSystem.actorOf(Props[DispatchActor], name = "dispatchActor")
 
-  var filter = mutable.Set[String]()
+  // var urlVisitedFilter = new ConcurrentHashMap[String, Boolean]()
+  var urlVisitedFilter = mutable.Set[String]()
+
+  def urlSetIsFull(): Boolean = urlSet.size >= 50
+  def urlFilter(url: String): Boolean = url.contains("cnblogs")
 
   def initMaintain(): Unit = {
     loadData()
-    filter.clear()
+    urlVisitedFilter.clear()
   }
 
   def loadData(): Unit = {

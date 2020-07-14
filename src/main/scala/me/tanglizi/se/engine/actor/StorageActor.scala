@@ -234,33 +234,24 @@ class StorageActor extends Actor with ActorLogging {
       log.info("inverted index table will be flushed")
 
       // traverse inverted index table to restore
-      println("1")
       for ((word, item) <- Engine.invertedIndexTable) {
         val hash: Long = HashUtil.hashMurmur3(word)
-        println("1")
         val fileName: String = s"${hash % Config.WORD_HASH_SIZE}.invert"
-        println("1")
         val file: File = new File(Config.STORAGE_PATH, fileName)
-        println("1")
 
         val writer = new RandomAccessFile(file, "rw")
-        println("1")
         writer.seek(writer.length())
-        println("1")
 
         // use exclusive lock to write files
         val channel: FileChannel = writer.getChannel
         val xLock: FileLock = channel.lock()
-        println("1")
 
         for ((docId, ps) <- item)
           for (p <- ps)
             writer.write(s"$word $docId $p${Config.CRLF}".getBytes())
 
-        println("1")
         xLock.release()
         writer.close()
-        println("1")
       }
       Engine.invertedIndexTable.clear()
       sender ! true

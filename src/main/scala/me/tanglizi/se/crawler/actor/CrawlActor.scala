@@ -1,7 +1,7 @@
 package me.tanglizi.se.crawler.actor
 
 import akka.actor.{Actor, ActorLogging}
-import me.tanglizi.se.crawler.CrawlerDispatcher
+import me.tanglizi.se.crawler.Crawler
 import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.entity.Protocol.{AddRequest, CrawlRequest, EnqueueCrawlRequest}
 import org.asynchttpclient.{AsyncHttpClient, Dsl, Response}
@@ -24,12 +24,13 @@ class CrawlActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case CrawlRequest(url) =>
+      log.info(s"crawling $url")
       val httpClient: AsyncHttpClient = Dsl.asyncHttpClient()
       val response: Response = httpClient.prepareGet(url).execute().get()
       val urls: Array[String] = getUrlsFromResponse(response)
 
       Engine.engineActor ! AddRequest(response)
-      CrawlerDispatcher.dispatchActor ! EnqueueCrawlRequest(urls)
+      Crawler.dispatchActor ! EnqueueCrawlRequest(urls)
   }
 
 }

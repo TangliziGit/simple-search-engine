@@ -5,6 +5,7 @@ import akka.actor.{Actor, ActorLogging}
 import akka.util.Timeout
 import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.config.Config
+import me.tanglizi.se.crawler.Crawler
 import me.tanglizi.se.entity.Protocol._
 
 import scala.concurrent.{Await, Future}
@@ -12,7 +13,7 @@ import scala.concurrent.{Await, Future}
 class EngineActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
-    case AddRequest(response) =>
+    case AddRequest(response) if !Engine.documentUrlToId.contains(response.getUri.toString) =>
       val documentId: Long = Engine.getDocumentId
       Engine.documentUrlToId(response.getUri.toString) = documentId
       Engine.documentIdToUrl(documentId) = response.getUri.toString
