@@ -26,5 +26,6 @@ object Protocol {
   case class LoadIndexRequest()
   case class FlushInvertedIndexRequest()
   case class FindInvertedIndexItemRequest(word: String)
+  case class RearrangeTablesRequest()
 
 }

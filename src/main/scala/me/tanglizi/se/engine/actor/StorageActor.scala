@@ -21,6 +21,98 @@ class StorageActor extends Actor with ActorLogging {
     new String(bytes)
   }
 
+  def rearrangeContentTables(): Unit = {
+    val directory = new File(Config.STORAGE_PATH)
+    val documentInfos: ArrayBuffer[DocumentInfo] = ArrayBuffer[DocumentInfo]()
+    for (file <- directory.listFiles((dir, name) => name.contains(".content"))) {
+
+      // use shared lock to read the file
+      val reader = new RandomAccessFile(file, "r")
+      val sLock: FileLock = reader.getChannel.lock(0, Long.MaxValue, true)
+
+      // read all content
+      while (reader.getFilePointer < reader.length()) {
+        val title: String = randomAccessFileReadLineForChinese(reader)
+        val url: String = reader.readLine()
+        val content: String = {
+          var Array(content, line) = Array("", "")
+
+          while ({
+            line = randomAccessFileReadLineForChinese(reader)
+            line != Config.CONTENT_SPLITTER
+          })
+            content += line
+          content
+        }
+
+        val documentId: Long = Engine.documentUrlToId(url)
+        if (!Engine.deletedDocumentIds.contains(documentId))
+          documentInfos += DocumentInfo(title, url, content)
+      }
+      sLock.release()
+      reader.close()
+
+      file.delete()
+
+      // write content
+      // use exclusive lock to write the file
+      val writer = new RandomAccessFile(file, "rw")
+      val xLock: FileLock = writer.getChannel.lock()
+
+      for (documentInfo <- documentInfos) {
+        writer.write(s"${documentInfo.title}${Config.CRLF}".getBytes())
+        writer.write(s"${documentInfo.url}${Config.CRLF}".getBytes())
+        writer.write(s"${documentInfo.content}${Config.CRLF + Config.CONTENT_SPLITTER + Config.CRLF}".getBytes())
+      }
+      xLock.release()
+      writer.close()
+    }
+  }
+
+  def rearrangeInvertIndexTables(): Unit = {
+    val directory = new File(Config.STORAGE_PATH)
+    val invertedIndexes = ArrayBuffer[(String, String, String)]()
+
+    for (file <- directory.listFiles((dir, name) => name.contains(".invert"))) {
+      // TODO: should we use shared lock to read file?
+      val reader = new BufferedReader(new FileReader(file))
+      reader.lines()
+        .forEach {
+          case s"$keyword $docId $position" if !Engine.deletedDocumentIds.contains(docId.toLong) =>
+            invertedIndexes.+=((keyword, docId, position))
+          case _ =>
+        }
+
+      file.delete()
+
+      // write content
+      // use exclusive lock to write the file
+      val writer = new RandomAccessFile(file, "rw")
+      val xLock: FileLock = writer.getChannel.lock()
+
+      for ((keyword, docId, position) <- invertedIndexes)
+          writer.write(s"$keyword $docId $position${Config.CRLF}".getBytes())
+
+      xLock.release()
+      writer.close()
+    }
+  }
+
+  def rearrangeIndexTable(): Unit = {
+    // need flush
+    for (documentId <- Engine.deletedDocumentIds)
+      Engine.indexTable.remove(documentId)
+  }
+
+  def rearrangeMetaTable(): Unit = {
+    // need flush
+    for (documentId <- Engine.deletedDocumentIds) {
+      val wordCount = Engine.wordCountInDocument(documentId)
+      Engine.totalWordCount.addAndGet(-wordCount)
+      Engine.totalDocumentCount.decrementAndGet()
+    }
+  }
+
   override def receive: Receive = {
     case StoreDocumentRequest(hash, documentInfo) =>
       val fileName: String = s"${hash % Config.CONTENT_HASH_SIZE}.content"
@@ -81,8 +173,10 @@ class StorageActor extends Actor with ActorLogging {
       val writer = new PrintWriter(new FileWriter(file))
       writer.println("DC" + Engine.totalDocumentCount)
       writer.println("WC" + Engine.totalWordCount)
-      for ((docId, wordCount) <- Engine.wordCountInDocument)
-        writer.println(s"$docId $wordCount")
+      for ((docId, wordCount) <- Engine.wordCountInDocument) {
+        val url: String = Engine.documentIdToUrl(docId)
+        writer.println(s"$docId $wordCount $url")
+      }
       writer.close()
       sender ! true
 
@@ -96,8 +190,10 @@ class StorageActor extends Actor with ActorLogging {
             Engine.totalDocumentCount.set(documentCount.toLong)
           case s"WC$wordCount" =>
             Engine.totalWordCount.set(wordCount.toLong)
-          case s"$docId $wordCount" =>
+          case s"$docId $wordCount $url" =>
             Engine.wordCountInDocument.put(docId.toLong, wordCount.toLong)
+            Engine.documentIdToUrl.put(docId.toLong, url)
+            Engine.documentUrlToId.put(url, docId.toLong)
         }
       reader.close()
       sender ! true
@@ -169,6 +265,18 @@ class StorageActor extends Actor with ActorLogging {
 
       reader.close()
       sender ! item
+
+    case RearrangeTablesRequest =>
+      // rearrange all tables
+      rearrangeContentTables()
+      rearrangeInvertIndexTables()
+      rearrangeIndexTable()
+      rearrangeMetaTable()
+
+      Engine.flushData()
+      sender ! true
   }
+
+
 }
 

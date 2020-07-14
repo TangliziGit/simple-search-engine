@@ -14,6 +14,8 @@ class EngineActor extends Actor with ActorLogging {
   override def receive: Receive = {
     case AddRequest(response) =>
       val documentId: Long = Engine.getDocumentId
+      Engine.documentUrlToId(response.getUri.toString) = documentId
+      Engine.documentIdToUrl(documentId) = response.getUri.toString
       Engine.tokenizeActor ! TokenizeDocumentRequest(documentId, response)
 
     case SearchRequest(sentence, cb) =>

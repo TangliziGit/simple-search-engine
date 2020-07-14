@@ -18,6 +18,8 @@ object Engine {
   val totalDocumentCount: AtomicLong = new AtomicLong(0)
   val totalWordCount: AtomicLong = new AtomicLong(0)
   val wordCountInDocument = mutable.Map[Long, Long]()
+  val documentIdToUrl = mutable.Map[Long, String]()   // TODO
+  val documentUrlToId = mutable.Map[String, Long]()   // TODO
 
   val actorSystem: ActorSystem = ActorSystem.create("searchEngineActorSystem")
 
@@ -29,6 +31,7 @@ object Engine {
   // indexTable: documentId -> (hashCode, fileOffset)
   val indexTable = mutable.Map[Long, (Int, Long)]()
   val invertedIndexTable = mutable.Map[String, mutable.Map[Long, ArrayBuffer[Int]]]()
+  val deletedDocumentIds = mutable.Set[Long]()
 
   def getDocumentId: Long = totalDocumentCount.getAndIncrement()
 
