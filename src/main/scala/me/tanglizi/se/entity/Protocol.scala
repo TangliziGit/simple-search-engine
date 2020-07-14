@@ -29,4 +29,7 @@ object Protocol {
   case class FindInvertedIndexItemRequest(word: String)
   case class RearrangeTablesRequest()
 
+  // CrawlActor
+  case class CrawlRequest(url: String)
+
 }
