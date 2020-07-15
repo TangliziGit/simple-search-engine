@@ -108,6 +108,7 @@ class StorageActor extends Actor with ActorLogging {
     val invertedIndexes = ArrayBuffer[(String, String, String)]()
 
     for (file <- directory.listFiles((dir, name) => name.contains(".invert"))) {
+      invertedIndexes.clear()
       // TODO: should we use shared lock to read file?
       val reader = new BufferedReader(new FileReader(file))
       reader.lines()

@@ -21,7 +21,7 @@ class CrawlerTest {
     Engine.loadData()
     Crawler.dispatchActor ! EnqueueCrawlRequest(urls)
 
-    Thread.sleep(1000*60*2)
+    Thread.sleep(1000*60*12)
     Engine.flushData()
     Crawler.storeData()
     println(Crawler.urlHashMap.size)
@@ -40,7 +40,7 @@ class CrawlerTest {
     Engine.eraseData()
     Crawler.dispatchActor ! EnqueueCrawlRequest(urls)
 
-    Thread.sleep(1000*60*2)
+    Thread.sleep(1000*60*12)
     Engine.flushData()
     Crawler.storeData()
     println(Crawler.urlHashMap.size)

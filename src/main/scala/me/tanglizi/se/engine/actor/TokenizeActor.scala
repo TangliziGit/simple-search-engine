@@ -39,27 +39,30 @@ class TokenizeActor extends Actor with ActorLogging {
         content
       }
 
-      val words: Array[String] = getSegments(content)
+      if (content.length != 0) {
+        val words: Array[String] = getSegments(content)
 
-      // convert tokenize result into word position list
-      // word -> [pos1, pos2]
-      var position: Int = 0
-      val positionMap = mutable.Map[String, mutable.ArrayBuffer[Int]]()
-      for (word <- words) {
-        positionMap.getOrElseUpdate(word, ArrayBuffer[Int]()) += position
-        position += word.length
+        // convert tokenize result into word position list
+        // word -> [pos1, pos2]
+        var position: Int = 0
+        val positionMap = mutable.Map[String, mutable.ArrayBuffer[Int]]()
+        for (word <- words) {
+          positionMap.getOrElseUpdate(word, ArrayBuffer[Int]()) += position
+          position += word.length
+        }
+
+        // wrap word position list into Token
+        val result: Array[Token] = positionMap
+          .map { case (word, positions) => Token(word, positions.toArray) }
+          .toArray
+
+        log.info(s"content title: $title, url: $url")
+
+        val documentInfo: DocumentInfo = DocumentInfo(title, url.toUrl, content)
+
+        Engine.indexActor ! IndexRequest(id, documentInfo, result)
+
       }
-
-      // wrap word position list into Token
-      val result: Array[Token] = positionMap
-        .map { case (word, positions) => Token(word, positions.toArray) }
-        .toArray
-
-      log.info(s"content title: $title, url: $url")
-
-      val documentInfo: DocumentInfo = DocumentInfo(title, url.toUrl, content)
-
-      Engine.indexActor ! IndexRequest(id, documentInfo, result)
 
     case TokenizeSearchWordRequest(sentence) =>
       // simply tokenize the search sentence
