@@ -144,10 +144,8 @@ class IndexActor extends Actor with ActorLogging {
           document.setInformation(documentInfo)
       }
 
-      documents = documents.filter(doc => {
-        println(doc.documentInfo.url)
+      documents = documents.filter(doc =>
         IndexActor.urlRegex.matches(doc.documentInfo.url)
-      }
       )
 
       if (isDescribed) {

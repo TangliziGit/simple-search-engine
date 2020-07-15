@@ -52,6 +52,7 @@ class StorageActor extends Actor with ActorLogging {
     val directory = new File(Config.STORAGE_PATH)
     val documentInfos: ArrayBuffer[DocumentInfo] = ArrayBuffer[DocumentInfo]()
     for (file <- directory.listFiles((dir, name) => name.contains(".content"))) {
+      documentInfos.clear()
 
       // use shared lock to read the file
       val reader = new RandomAccessFile(file, "r")
@@ -66,14 +67,15 @@ class StorageActor extends Actor with ActorLogging {
 
           while ({
             line = randomAccessFileReadLineForChinese(reader)
-            line != Config.CONTENT_SPLITTER && reader.getFilePointer < reader.length()
+            line != Config.CONTENT_SPLITTER
           })
-            content += line
+            // pay attention to it
+            content += line + Config.CRLF
           content
         }
 
-        val documentId: Long = Engine.documentUrlToId.getOrElse(url, -1)
-        if (documentId != -1 && !Engine.deletedDocumentIds.contains(documentId))
+        val documentId: Long = Engine.documentUrlToId(url)
+        if (!Engine.deletedDocumentIds.contains(documentId))
           documentInfos += DocumentInfo(title, url, content)
       }
       sLock.release()
@@ -87,6 +89,11 @@ class StorageActor extends Actor with ActorLogging {
       val xLock: FileLock = writer.getChannel.lock()
 
       for (documentInfo <- documentInfos) {
+        val offset: Long = writer.length()
+        val documentId: Long = Engine.documentUrlToId(documentInfo.url)
+        val hashCode: Int = Engine.indexTable(documentId)._1
+
+        Engine.indexTable(documentId) = (hashCode, offset)
         writer.write(s"${documentInfo.title}${Config.CRLF}".getBytes())
         writer.write(s"${documentInfo.url}${Config.CRLF}".getBytes())
         writer.write(s"${documentInfo.content}${Config.CRLF + Config.CONTENT_SPLITTER + Config.CRLF}".getBytes())
