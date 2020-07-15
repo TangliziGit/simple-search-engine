@@ -1,4 +1,4 @@
-package me.tanglizi.se.web.controller.model
+package me.tanglizi.se.web.model
 
 import java.time.Instant
 

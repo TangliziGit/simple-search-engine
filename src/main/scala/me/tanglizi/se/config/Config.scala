@@ -18,7 +18,7 @@ object Config {
   val INDEX_TABLE_FLUSH_FREQ: Long = 50
   val META_TABLE_FLUSH_FREQ: Long = 50
   val MAX_DELETED_DOCUMENTS_SIZE: Long = 50
-  val MAX_URL_SET_SIZE: Long = 500
+  val MAX_URL_SET_SIZE: Long = 50
 
   val DOCUMENT_BM25_K: Double = 2
   val DOCUMENT_BM25_B: Double = 0.75

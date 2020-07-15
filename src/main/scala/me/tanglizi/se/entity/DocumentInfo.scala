@@ -1,5 +1,7 @@
 package me.tanglizi.se.entity
 
-case class DocumentInfo(title: String, url: String, content: String) {
+import scala.beans.BeanProperty
+
+case class DocumentInfo(@BeanProperty title: String, @BeanProperty url: String, @BeanProperty content: String) {
   override def toString: String = s"$title, $url, ${content.slice(0, 20)}"
 }

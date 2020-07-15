@@ -38,8 +38,8 @@ class EngineActor extends Actor with ActorLogging {
         Await.result(wordsFuture, Config.DEFAULT_AWAIT_TIMEOUT)
       }
 
-      val documentsFuture: Future[Array[Document]] =
-        (Engine.indexActor ? IndexSearchRequest(words, xs => ())).mapTo[Array[Document]]
+      val documentsFuture: Future[List[Document]] =
+        (Engine.indexActor ? IndexSearchRequest(words, xs => ())).mapTo[List[Document]]
       val documents = Await.result(documentsFuture, Config.DEFAULT_AWAIT_TIMEOUT)
       sender ! documents
 

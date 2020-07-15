@@ -30,12 +30,14 @@ class CrawlActor extends Actor with ActorLogging {
       val httpClient: AsyncHttpClient = Dsl.asyncHttpClient()
       val response: Response = httpClient.prepareGet(url).execute().get()
       val urls: Array[String] = getUrlsFromResponse(response)
+      val hash: String = HashUtil.hashSHA256(response.getResponseBody())
 
-      if (Crawler.urlSet.contains(url)) {
-        val hash: String = HashUtil.hashSHA256(response.getResponseBody())
+      if (Crawler.urlHashMap.contains(url)) {
         if (hash != Crawler.urlHashMap(url))
           Engine.engineActor ! DeleteRequest(url)
       }
+
+      Crawler.urlHashMap(url) = hash
       Engine.engineActor ! AddRequest(response)
       Crawler.dispatchActor ! EnqueueCrawlRequest(urls)
   }
