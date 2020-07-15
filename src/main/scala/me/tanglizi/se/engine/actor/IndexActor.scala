@@ -96,5 +96,6 @@ class IndexActor extends Actor with ActorLogging {
       }
 
       cb(documents)
+      sender ! documents
   }
 }

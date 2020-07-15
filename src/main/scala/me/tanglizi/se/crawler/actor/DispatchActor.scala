@@ -4,9 +4,10 @@ import akka.pattern._
 import akka.actor.{Actor, ActorLogging}
 import me.tanglizi.se.config.Config
 import me.tanglizi.se.crawler.Crawler
-import me.tanglizi.se.crawler.Crawler.{urlSet, urlVisitedFilter}
+import me.tanglizi.se.crawler.Crawler.{urlHashMap, urlSet, urlVisitedFilter}
 import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.entity.Protocol.{CrawlRequest, EnqueueCrawlRequest}
+import me.tanglizi.se.util.HashUtil
 
 import scala.util.control.Breaks
 
@@ -28,7 +29,6 @@ class DispatchActor extends Actor with ActorLogging {
               Crawler.crawlActor ! CrawlRequest(url)
           } else if (urlSet.contains(url)) {
             // urlSet is full and contains url, update it
-            // TODO: EngineActor ! DeleteIfChangedRequest
             if (!urlVisitedFilter.contains(url))
               Crawler.crawlActor ! CrawlRequest(url)
           }

@@ -1,7 +1,7 @@
 package me.tanglizi.se.engine
 
 import me.tanglizi.se.entity.Document
-import me.tanglizi.se.entity.Protocol.{AddRequest, DeleteRequest, SearchRequest}
+import me.tanglizi.se.entity.Protocol.{AddRequest, DeleteRequest, AsyncSearchRequest}
 import org.asynchttpclient.{AsyncHttpClient, Dsl, Response}
 import org.junit._
 
@@ -16,7 +16,7 @@ class EngineActorTest {
     val callback: List[Document] => Unit =
       docs => println(s"result: \n${docs.mkString("\n")}")
 
-    Engine.engineActor ! SearchRequest(sentence, callback)
+    Engine.engineActor ! AsyncSearchRequest(sentence, callback)
 
     Thread.sleep(2000)
   }

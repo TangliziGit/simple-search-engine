@@ -8,6 +8,12 @@
     <scala.version>2.13.0</scala.version>
   </properties>
 
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.2.2.RELEASE</version>
+  </parent>
+
   <repositories>
     <repository>
       <id>scala-tools.org</id>
@@ -43,18 +49,21 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- akka -->
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-actor_2.13</artifactId>
       <version>2.6.1</version>
     </dependency>
 
+    <!-- asyncHttpClient -->
     <dependency>
       <groupId>org.asynchttpclient</groupId>
       <artifactId>async-http-client</artifactId>
       <version>2.2.0</version>
     </dependency>
 
+    <!-- slf4j -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -66,18 +75,25 @@
       <version>1.6.4</version>
     </dependency>
 
+    <!-- segment -->
     <dependency>
       <groupId>io.github.yizhiru</groupId>
       <artifactId>thulac4j</artifactId>
       <version>3.1.2</version>
     </dependency>
 
+    <!-- util -->
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>1.14</version>
     </dependency>
 
+    <!-- spring -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

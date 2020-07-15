@@ -8,7 +8,8 @@ object Protocol {
   // SearchEngineActorSystem
   // EngineActor
   case class AddRequest(response: Response)
-  case class SearchRequest(word: String, cb: List[Document] => Any)
+  case class SearchRequest(word: String)
+  case class AsyncSearchRequest(word: String, cb: List[Document] => Any)
   case class DeleteRequest(documentUrl: String)
 
   // TokenizeActor
