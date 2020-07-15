@@ -7,7 +7,8 @@ import me.tanglizi.se.crawler.Crawler
 import me.tanglizi.se.engine.Engine
 import me.tanglizi.se.entity.{Document, DocumentInfo}
 import me.tanglizi.se.entity.Protocol.{EnqueueCrawlRequest, SearchRequest}
-import me.tanglizi.se.web.model.RestResponse
+import me.tanglizi.se.util.SegmentUtil
+import me.tanglizi.se.web.model.{RestResponse, SearchResult}
 import org.springframework.web.bind.annotation.{GetMapping, RequestMapping, RequestParam, RestController}
 
 import scala.concurrent.{Await, Future}
@@ -17,7 +18,7 @@ import scala.concurrent.{Await, Future}
 class MainController {
 
   @GetMapping(Array("search"))
-  def search(@RequestParam("q") sentence: String): RestResponse[Array[DocumentInfo]] = {
+  def search(@RequestParam("q") sentence: String): RestResponse[SearchResult] = {
     implicit val timeout: Timeout = Config.DEFAULT_AKKA_TIMEOUT
 
     val documents: List[Document] = {
@@ -26,10 +27,12 @@ class MainController {
       Await.result(future, Config.DEFAULT_AWAIT_TIMEOUT)
     }
 
-    println(documents)
-    RestResponse.ok[Array[DocumentInfo]](
-      documents.map(_.documentInfo).toArray
+    val searchResult: SearchResult = SearchResult(
+      documents.map(_.documentInfo).toArray,
+      SegmentUtil.getTokens(sentence)
     )
+
+    RestResponse.ok[SearchResult](searchResult)
   }
 
   @GetMapping(Array("crawl"))

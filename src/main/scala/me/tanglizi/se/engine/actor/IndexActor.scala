@@ -13,11 +13,59 @@ import me.tanglizi.se.util.HashUtil
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{Await, Future}
+import scala.util.control.Breaks
 import scala.util.{Failure, Success}
 
 class IndexActor extends Actor with ActorLogging {
 
   import context.dispatcher
+
+  def createDescription(document: Document, keywordPositionsMaps: List[mutable.Map[Long, ArrayBuffer[Int]]]): String = {
+    val content: String = document.documentInfo.content
+    val documentId: Long = document.documentId
+
+    val positions: Array[Int] = {
+      val positions = mutable.ArrayBuffer[Int]()
+      for (keywordPositionMap <- keywordPositionsMaps)
+        for (poss <- keywordPositionMap(documentId))
+          positions += poss
+      positions.sorted.toArray
+    }
+
+    val interval: Int = Config.KEYWORD_INTERVAL_IN_DESCRIPTION
+    var Array(prev, pos) = Array(0, 0)
+    val builder: StringBuilder = {
+      if (positions(0) - interval > 0)
+        new mutable.StringBuilder("...")
+      else
+        new mutable.StringBuilder()
+    }
+
+    val loop = new Breaks
+
+    loop.breakable {
+      for (cur <- positions) {
+        val Array(cPrev, cPos) = Array(cur - interval, cur + interval)
+
+        if (cPrev <= pos) {
+          pos = cPos
+        } else {
+          builder.append(content.slice(prev, pos))
+          builder.append("...")
+          prev = cPrev
+          pos  = cPos
+        }
+
+        if (builder.length() >= Config.MAX_DESCRIPTION_LENGTH)
+          loop.break()
+      }
+
+      builder.append(content.slice(prev, pos))
+      builder.append("...")
+    }
+
+    builder.toString.slice(0, Config.MAX_DESCRIPTION_LENGTH)
+  }
 
   override def receive: Receive = {
     case IndexRequest(id, documentInfo, tokens) =>
@@ -61,7 +109,7 @@ class IndexActor extends Actor with ActorLogging {
       if (Engine.totalDocumentCount.get() % Config.META_TABLE_FLUSH_FREQ == 0)
         Engine.storageActor ! FlushMetaRequest
 
-    case IndexSearchRequest(words, cb) =>
+    case IndexSearchRequest(words, cb, isDescribed) =>
       implicit val timeout: Timeout = Config.DEFAULT_AKKA_TIMEOUT
 
       // get inverted index item of each keyword
@@ -95,6 +143,13 @@ class IndexActor extends Actor with ActorLogging {
           document.setInformation(documentInfo)
       }
 
+      if (isDescribed) {
+        documents.foreach(doc => {
+          val docInfo: DocumentInfo = doc.documentInfo
+          val description: String = createDescription(doc, keywordPositionsMaps)
+          doc.setInformation(docInfo.title, docInfo.url, description)
+        })
+      }
       cb(documents)
       sender ! documents
   }

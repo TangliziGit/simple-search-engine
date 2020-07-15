@@ -18,7 +18,7 @@ object Protocol {
 
   // IndexActor
   case class IndexRequest(id: Long, documentInfo: DocumentInfo, words: Array[Token])
-  case class IndexSearchRequest(words: Array[String], cb: List[Document] => Any)
+  case class IndexSearchRequest(words: Array[String], cb: List[Document] => Any, isDescribed: Boolean = true)
 
   // StorageActor
   case class StoreDocumentRequest(hash: Long, documentInfo: DocumentInfo)

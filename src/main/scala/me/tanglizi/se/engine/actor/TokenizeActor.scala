@@ -16,12 +16,9 @@ import scala.util.matching.Regex
 class TokenizeActor extends Actor with ActorLogging {
 
   def getSegments(content: String): Array[String] = {
-    val words: Array[String] = {
-      Segmenter.enableFilterStopWords()
-      val words: util.List[String] = Segmenter.segment(content)
-      words.toArray[String](Array.ofDim[String](words.size))
-    }
-    words
+    // Segmenter.enableFilterStopWords()
+    val words: util.List[String] = Segmenter.segment(content)
+    words.toArray[String](Array.ofDim[String](words.size))
   }
 
   override def receive: Receive = {
