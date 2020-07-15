@@ -27,7 +27,7 @@ class IndexActor extends Actor with ActorLogging {
 
     val positions: Array[Int] = {
       val positions = mutable.ArrayBuffer[Int]()
-      for (keywordPositionMap <- keywordPositionsMaps)
+      for (keywordPositionMap <- keywordPositionsMaps if keywordPositionMap.contains(documentId))
         for (poss <- keywordPositionMap(documentId))
           positions += poss
       positions.sorted.toArray
