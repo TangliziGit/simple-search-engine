@@ -28,7 +28,7 @@ class MainController {
     }
 
     val searchResult: SearchResult = SearchResult(
-      documents.map(_.documentInfo).toArray,
+      documents.map(_.documentInfo).slice(0, Config.MAX_SEARCH_RESULT_LENGTH).toSet.toArray,
       SegmentUtil.getTokens(sentence)
     )
 

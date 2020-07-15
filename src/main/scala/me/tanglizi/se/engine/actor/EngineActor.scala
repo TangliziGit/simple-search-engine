@@ -40,7 +40,8 @@ class EngineActor extends Actor with ActorLogging {
 
       val documentsFuture: Future[List[Document]] =
         (Engine.indexActor ? IndexSearchRequest(words, xs => ())).mapTo[List[Document]]
-      val documents = Await.result(documentsFuture, Config.DEFAULT_AWAIT_TIMEOUT)
+      val documents: List[Document] = Await.result(documentsFuture, Config.DEFAULT_AWAIT_TIMEOUT)
+      documents.filter(doc => !Engine.deletedDocumentIds.contains(doc.documentId))
       sender ! documents
 
     case AsyncSearchRequest(sentence, cb) =>

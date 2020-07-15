@@ -8,7 +8,27 @@ import org.junit._
 class CrawlerTest {
 
   @Test
-  def testCrawler(): Unit = {
+  def testCrawlerWithData(): Unit = {
+    val urls: Array[String] = Array(
+      "https://www.cnblogs.com/",
+      "https://www.cnblogs.com/tanglizi/p/11515409.html",
+      "https://www.cnblogs.com/tanglizi/",
+      "https://news.cnblogs.com/n/667106/",
+      "https://q.cnblogs.com/"
+    )
+
+    Crawler.loadData()
+    Engine.loadData()
+    Crawler.dispatchActor ! EnqueueCrawlRequest(urls)
+
+    Thread.sleep(1000*10*6)
+    Engine.flushData()
+    Crawler.storeData()
+    println(Crawler.urlHashMap.size)
+  }
+
+  @Test
+  def testCrawlerWithoutData(): Unit = {
     val urls: Array[String] = Array(
       "https://www.cnblogs.com/",
       "https://www.cnblogs.com/tanglizi/p/11515409.html",
@@ -25,5 +45,4 @@ class CrawlerTest {
     Crawler.storeData()
     println(Crawler.urlHashMap.size)
   }
-
 }

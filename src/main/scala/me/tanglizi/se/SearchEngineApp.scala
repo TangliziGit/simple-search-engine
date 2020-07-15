@@ -4,6 +4,7 @@ import me.tanglizi.se.crawler.Crawler
 import me.tanglizi.se.engine.Engine
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.scheduling.annotation.EnableScheduling
 
 object SearchEngineApp {
 
@@ -16,4 +17,5 @@ object SearchEngineApp {
 }
 
 @SpringBootApplication
+@EnableScheduling
 class SearchEngineApp {}

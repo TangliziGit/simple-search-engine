@@ -12,7 +12,6 @@ class DispatchActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case EnqueueCrawlRequest(urls) =>
-      log.info(s"total pages number: ${urlVisitedFilter.size}")
       val loop = new Breaks
 
       loop.breakable {
