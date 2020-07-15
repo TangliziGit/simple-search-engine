@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Search Engine - Index</title>
+</head>
+<body>
+
+    <h1>Simple Search Engine</h1>
+
+    <input type="text" placeholder="Enter your keywords" id="text" style="width: 50%"/>
+    <input type="button" value="Search" id="btn">
+
+    <footer>
+        <br />
+        <hr />
+        <small>GitHub: <a href="https://github.com/TangliziGit/simple-search-engine/">https://github.com/TangliziGit/simple-search-engine/</a></small>
+    </footer>
+
+    <script>
+        const btn = document.getElementById("btn");
+        const text = document.getElementById("text");
+
+        btn.onclick = () => {
+            window.location.href = "/result.html?q=" + text.value;
+        };
+    </script>
+</body>
+</html>

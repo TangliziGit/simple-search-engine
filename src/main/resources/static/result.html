@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Search Engine - Result</title>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+    <style>
+        .result {
+            padding: 10px;
+        }
+        p {
+            word-break: break-all;
+            word-wrap: break-word;
+            width: 80%;
+        }
+        .gray {
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Simple Search Engine</h1>
+
+    <input type="text" placeholder="Enter your keywords" id="text" style="width: 50%"/>
+    <input type="button" value="Search" id="btn">
+
+    <br />
+    <hr />
+    <div id="content">
+        <h2 class="gray">Waiting ...</h2>
+    </div>
+
+    <script id="result-template" type="text/x-handlebars-template">
+        <h3><strong><a href="{{url}}">{{title}}</a></strong></h3>
+        <p>{{content}}</p>
+    </script>
+
+    <footer>
+        <br />
+        <hr />
+        <small>GitHub: <a href="https://github.com/TangliziGit/simple-search-engine/">https://github.com/TangliziGit/simple-search-engine/</a></small>
+    </footer>
+
+    <script>
+        const btn = document.getElementById("btn");
+        const text = document.getElementById("text");
+
+        btn.onclick = () => {
+            window.location.href = "/result.html?q=" + text.value;
+        };
+    </script>
+
+    <script>
+        const getUrlParam = (key) => {
+            const query = window.location.search.substring(1);
+            const vars = query.split("&");
+            for (let i=0;i<vars.length;i++) {
+                const pair = vars[i].split("=");
+                if(pair[0] === key) return pair[1];
+            }
+            return "None";
+        };
+
+        const highlight = (content, tokens) => {
+            for (const token of tokens)
+                content = content.replace(RegExp(token, "g"), `<span style="color: red">${token}</span>`)
+            return content;
+        };
+
+        const query = getUrlParam('q');
+        const content = document.getElementById("content");
+        fetch("/search?q=" + query)
+            .then(response => response.json())
+            .then(response => {
+                content.children[0].remove();
+
+                const template = Handlebars.compile(document.getElementById("result-template").innerHTML);
+                const data = response.payload
+
+                for (const result of data.result) {
+                    const elem = document.createElement("div");
+                    const html = template(result);
+
+                    elem.class = "result";
+                    elem.innerHTML = highlight(html, data.tokens);
+                    content.appendChild(elem);
+                }
+
+                if (data.result.length === 0) {
+                    const elem = document.createElement("h2");
+                    elem.setAttribute("class", "gray");
+                    elem.innerHTML = "Oops! No Result...";
+                    content.appendChild(elem);
+                }
+            })
+            .catch(err => console.log(err));
+    </script>
+
+</body>
+</html>
