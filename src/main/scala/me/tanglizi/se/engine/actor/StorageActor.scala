@@ -39,9 +39,13 @@ class StorageActor extends Actor with ActorLogging {
   }
 
   def randomAccessFileReadLineForChinese(reader: RandomAccessFile): String = {
-    val content: String = reader.readLine();
-    val bytes: Array[Byte] = content.toCharArray.map(_.toByte)
-    new String(bytes)
+    val content: String = reader.readLine()
+    if (content == null) {
+      "null"
+    } else {
+      val bytes: Array[Byte] = content.toCharArray.map(_.toByte)
+      new String(bytes)
+    }
   }
 
   def rearrangeContentTables(): Unit = {
@@ -62,14 +66,14 @@ class StorageActor extends Actor with ActorLogging {
 
           while ({
             line = randomAccessFileReadLineForChinese(reader)
-            line != Config.CONTENT_SPLITTER
+            line != Config.CONTENT_SPLITTER && reader.getFilePointer < reader.length()
           })
             content += line
           content
         }
 
-        val documentId: Long = Engine.documentUrlToId(url)
-        if (!Engine.deletedDocumentIds.contains(documentId))
+        val documentId: Long = Engine.documentUrlToId.getOrElse(url, -1)
+        if (documentId != -1 && !Engine.deletedDocumentIds.contains(documentId))
           documentInfos += DocumentInfo(title, url, content)
       }
       sLock.release()
@@ -160,7 +164,10 @@ class StorageActor extends Actor with ActorLogging {
       xLock.release()
       writer.close()
 
-    case FindDocumentRequest(documentId) =>
+    case FindDocumentRequest(documentId) if !Engine.indexTable.contains(documentId) =>
+      sender ! DocumentInfo("null", "null", "null")
+
+    case FindDocumentRequest(documentId) if Engine.indexTable.contains(documentId) =>
       val indexItem: (Int, Long) = Engine.indexTable(documentId)
       val Array(documentHash, offset) = Array(indexItem._1, indexItem._2)
 

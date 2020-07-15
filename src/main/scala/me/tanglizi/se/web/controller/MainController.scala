@@ -19,12 +19,12 @@ class MainController {
 
   @GetMapping(Array("search"))
   def search(@RequestParam("q") sentence: String): RestResponse[SearchResult] = {
-    implicit val timeout: Timeout = Config.DEFAULT_AKKA_TIMEOUT
+    implicit val timeout: Timeout = Config.WEB_AKKA_TIMEOUT
 
     val documents: List[Document] = {
       val future: Future[List[Document]] =
         (Engine.engineActor ? SearchRequest(sentence)).mapTo[List[Document]]
-      Await.result(future, Config.DEFAULT_AWAIT_TIMEOUT)
+      Await.result(future, Config.WEB_AWAIT_TIMEOUT)
     }
 
     val searchResult: SearchResult = SearchResult(

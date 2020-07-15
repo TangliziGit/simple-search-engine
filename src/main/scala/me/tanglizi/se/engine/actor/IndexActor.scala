@@ -14,6 +14,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.{Await, Future}
 import scala.util.control.Breaks
+import scala.util.matching.Regex
 import scala.util.{Failure, Success}
 
 class IndexActor extends Actor with ActorLogging {
@@ -127,7 +128,7 @@ class IndexActor extends Actor with ActorLogging {
         Await.result(futures, Config.DEFAULT_AWAIT_TIMEOUT)
 
       // build Document list, and sort it
-      val documents: List[Document] = Document
+      var documents: List[Document] = Document
         .fromDs(keywordPositionsMaps, words)
         .sortBy(document => -document.BM25)
 
@@ -143,6 +144,12 @@ class IndexActor extends Actor with ActorLogging {
           document.setInformation(documentInfo)
       }
 
+      documents = documents.filter(doc => {
+        println(doc.documentInfo.url)
+        IndexActor.urlRegex.matches(doc.documentInfo.url)
+      }
+      )
+
       if (isDescribed) {
         documents.foreach(doc => {
           val docInfo: DocumentInfo = doc.documentInfo
@@ -153,4 +160,8 @@ class IndexActor extends Actor with ActorLogging {
       cb(documents)
       sender ! documents
   }
+}
+
+object IndexActor {
+  val urlRegex: Regex = new Regex("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()!@:%_\\+.~#?&\\/\\/=]*)")
 }

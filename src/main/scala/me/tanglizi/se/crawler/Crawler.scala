@@ -32,14 +32,15 @@ object Crawler {
 
   def loadData(): Unit = {
     val file: File = new File(Config.STORAGE_PATH, Config.URL_SET)
-    val reader = new BufferedReader(new FileReader(file))
-
-    reader.lines()
-      .forEach {
-        case s"$url $hash" =>
-          urlHashMap.put(url, hash)
-          urlSet.add(url)
-      }
+    if (file.exists()) {
+      val reader = new BufferedReader(new FileReader(file))
+      reader.lines()
+        .forEach {
+          case s"$url $hash" =>
+            urlHashMap.put(url, hash)
+            urlSet.add(url)
+        }
+    }
   }
 
   def storeData(): Unit = {

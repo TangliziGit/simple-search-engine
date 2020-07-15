@@ -56,7 +56,7 @@ object Document {
       }
     }
 
-    val documents = for ((documentId, wordsMap) <- documentIdToWordsMap) yield {
+    val documents = for ((documentId, wordsMap) <- documentIdToWordsMap if Engine.wordCountInDocument.contains(documentId)) yield {
       val document = new Document(documentId, wordsMap.toMap, Engine.wordCountInDocument(documentId))
       document.calculateBM25(keywords, keywordPositionsMaps.map(_.size))
       document

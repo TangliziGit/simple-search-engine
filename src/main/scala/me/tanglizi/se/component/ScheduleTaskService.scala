@@ -20,10 +20,15 @@ class ScheduleTaskService {
   }
 
   // @Scheduled(cron = "0 0 0 1/2 * ? *")
-  @Scheduled(cron = "0 7/5 * * * ? ")
-  def flushAndRearrangeData(): Unit = {
+  @Scheduled(cron = "0 0/3 * * * ? ")
+  def flushData(): Unit = {
     Engine.flushData()
     Crawler.storeData()
+  }
+
+  // @Scheduled(cron = "0 0 0/1 * * ? *")
+  @Scheduled(cron = "0 0/3 * * * ? ")
+  def rearrangeData(): Unit = {
     Engine.rearrangeData()
   }
 
