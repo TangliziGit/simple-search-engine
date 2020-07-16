@@ -11,14 +11,14 @@ import org.springframework.stereotype.Component
 class ScheduleTaskService {
   val logger = LoggerFactory.getLogger(classOf[ScheduleTaskService])
 
-  // @Scheduled(cron = "0 0 0 1/2 * ? *")
+  @Scheduled(cron = "0 0 0 1/2 * ? *")
   def crawl(): Unit = {
     logger.info("start crawl")
     Crawler.initMaintain()
     Crawler.dispatchActor ! EnqueueCrawlRequest(Crawler.urlSet.toArray)
   }
 
-  // @Scheduled(cron = "0 0 0 1/2 * ? *")
+  @Scheduled(cron = "0 0 0 1/2 * ? *")
   def flushData(): Unit = {
     Engine.flushData()
     Crawler.storeData()
