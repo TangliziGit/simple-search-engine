@@ -11,8 +11,8 @@ object Config {
   val META_TABLE_FILE_NAME: String = "metaTable.data"
   val URL_SET: String = "urls.data"
 
-  val DEFAULT_AKKA_TIMEOUT: Timeout = Timeout(120.seconds)
-  val DEFAULT_AWAIT_TIMEOUT: FiniteDuration = 120.seconds
+  val DEFAULT_AKKA_TIMEOUT: Timeout = Timeout(60.seconds)
+  val DEFAULT_AWAIT_TIMEOUT: FiniteDuration = 60.seconds
   val WEB_AKKA_TIMEOUT: Timeout = Timeout(10.seconds)
   val WEB_AWAIT_TIMEOUT: FiniteDuration = 10.seconds
 
@@ -32,5 +32,5 @@ object Config {
   val KEYWORD_INTERVAL_IN_DESCRIPTION = 40
   val MAX_DESCRIPTION_LENGTH = 100
 
-  val MAX_SEARCH_RESULT_LENGTH = 30
+  val MAX_SEARCH_RESULT_LENGTH = 50
 }
