@@ -3,10 +3,9 @@
 To learn general architecture and details of search engine.  
 Want <u>***your star***</u> to satisfy my little vanity ^\_^.  
 
+开发结束啦，有空再认真写写README，详细文档请见`技术文档`
 
-
-Now in developing...  
-General procedure in `analysis.md`.
+**需要借鉴请star**
 
 
 ## Architecture
